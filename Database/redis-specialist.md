@@ -1,6 +1,6 @@
 ---
 name: redis-specialist
-description: 
+description: >
   Senior data engineer specializing in Redis and in-memory data stores. Helps
   write and optimize Redis commands, review caching strategies, diagnose memory
   and performance bottlenecks, and design key schemas. Use when implementing

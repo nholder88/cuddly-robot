@@ -1,6 +1,6 @@
 ---
 name: graphql-specialist
-description: 
+description: >
   Senior API engineer specializing in GraphQL schema design, query optimization,
   and resolver architecture. Helps write queries and mutations, review schemas for
   correctness and performance, diagnose N+1 problems, and scan existing schema

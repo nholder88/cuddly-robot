@@ -1,6 +1,6 @@
 ---
 name: sql-specialist
-description: 
+description: >
   Senior database engineer specializing in relational databases and SQL. Helps
   write and optimize queries, review existing SQL for correctness and performance,
   diagnose bottlenecks via explain plans, and scan database project schemas. Use

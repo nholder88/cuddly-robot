@@ -1,6 +1,6 @@
 ---
 name: mongodb-specialist
-description: 
+description: >
   Senior database engineer specializing in MongoDB and document databases. Helps
   write and optimize queries, aggregation pipelines, and schema designs. Reviews
   existing queries for correctness and performance, diagnoses bottlenecks via
