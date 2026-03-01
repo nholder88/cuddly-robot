@@ -13,6 +13,9 @@ handoffs:
   - label: Plan improvements
     agent: architect-planner
     prompt: Create a plan to address the issues found in the code review.
+  - label: Address review findings
+    agent: typescript-implementer
+    prompt: Address the code review findings and fix the issues.
   - label: Add tests
     agent: ui-test-specialist
     prompt: Write tests for the reviewed code.

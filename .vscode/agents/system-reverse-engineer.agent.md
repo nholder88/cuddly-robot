@@ -18,8 +18,8 @@ tools:
   - todo
 handoffs:
   - label: Review the spec
-    agent: code-review-sentinel
-    prompt: Review the generated system spec for completeness and accuracy.
+    agent: assumption-reviewer
+    prompt: Review the system spec for blind spots and completeness.
   - label: Plan reconstruction
     agent: architect-planner
     prompt: Use the system spec to create a reconstruction plan and backlog.

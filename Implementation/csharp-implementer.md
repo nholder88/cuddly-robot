@@ -20,7 +20,10 @@ handoffs:
   - label: Clarify the spec
     agent: pbi-clarifier
     prompt: Clarify requirements before I implement.
-  - label: Add unit tests
+  - label: Add unit tests (frontend)
+    agent: frontend-unit-test-specialist
+    prompt: Write unit tests for the implemented UI code.
+  - label: Add unit tests (backend)
     agent: backend-unit-test-specialist
     prompt: Write unit tests for the implemented code.
   - label: Add docs

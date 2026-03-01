@@ -13,9 +13,12 @@ tools:
   - todo
   - web/fetch
 handoffs:
-  - label: Review the code
-    agent: code-review-sentinel
-    prompt: Review the implementation for completeness and correctness.
+  - label: Clarify backlog into PBIs
+    agent: pbi-clarifier
+    prompt: Turn backlog items into precise PBI specifications with acceptance criteria.
+  - label: Implement
+    agent: typescript-implementer
+    prompt: Implement from this architecture or spec.
   - label: Reverse engineer existing system
     agent: system-reverse-engineer
     prompt: Analyze the existing codebase and produce a system specification.
