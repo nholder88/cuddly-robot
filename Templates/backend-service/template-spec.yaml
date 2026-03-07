@@ -1,0 +1,143 @@
+version: 1.0.0
+template: backend-service
+purpose: Reusable baseline for secure, observable backend APIs and workers.
+
+stack:
+  language: TypeScript
+  preferred_framework: NestJS
+  alternate_frameworks:
+    - Fastify
+    - Existing Express projects only
+  testing: Unit + integration + contract tests
+
+required_capabilities:
+  - CAP-FF-001
+  - CAP-FF-002
+  - CAP-REP-001
+  - CAP-REP-002
+  - CAP-ADM-001
+  - CAP-OBS-001
+  - CAP-SEC-001
+  - CAP-DATA-001
+  - CAP-OPS-001
+
+required_env:
+  runtime:
+    - NODE_ENV
+    - SERVICE_NAME
+    - SERVICE_VERSION
+    - PORT
+    - LOG_LEVEL
+  security:
+    - JWT_ISSUER
+    - JWT_AUDIENCE
+    - JWT_JWKS_URI
+    - CORS_ALLOWED_ORIGINS
+    - RATE_LIMIT_PER_MINUTE
+  data:
+    - DATABASE_URL
+    - REDIS_URL
+  feature_flags:
+    - FEATURE_FLAG_PROVIDER
+    - FEATURE_FLAG_SDK_KEY
+  telemetry:
+    - OTEL_EXPORTER_OTLP_ENDPOINT
+    - SENTRY_DSN
+  ops:
+    - HEALTHCHECK_TIMEOUT_MS
+    - SHUTDOWN_TIMEOUT_MS
+
+required_modules:
+  - ConfigModule
+  - LoggerModule
+  - AuthModule
+  - FeatureFlagModule
+  - HealthModule
+  - PersistenceModule
+  - ReportingModule
+  - AdminModule
+
+security_baseline:
+  authentication:
+    - JWT validation via issuer/audience/jwks
+    - Service-to-service auth for internal endpoints
+  authorization:
+    - Role- and permission-based guard layer
+    - Resource-level authorization checks
+  transport:
+    - Strict CORS allow list
+    - Security headers middleware
+  abuse_protection:
+    - Route-level rate limiting
+    - Request body size limits
+  secrets:
+    - No secrets in logs
+    - Startup validation of required secrets
+
+logging_baseline:
+  logger: pino
+  required_fields:
+    - timestamp
+    - level
+    - service
+    - environment
+    - correlationId
+    - requestId
+    - userId
+    - route
+    - statusCode
+    - durationMs
+  prohibited_fields:
+    - password
+    - token
+    - secret
+    - raw_pii
+
+data_mapping_baseline:
+  layers:
+    - transport_dto
+    - domain_model
+    - persistence_model
+  rules:
+    - No persistence entities in controller responses
+    - Mapper functions are explicit and unit-tested
+    - Version API contracts when introducing breaking changes
+
+feature_flags:
+  requirements:
+    - Provider adapter interface
+    - Local fallback mode
+    - Flag evaluation audit logging
+  admin_endpoints:
+    - GET /admin/feature-flags
+    - PATCH /admin/feature-flags/:flagKey
+
+reporting_admin_hooks:
+  reporting_endpoints:
+    - GET /reports/definitions
+    - POST /reports/run
+    - GET /reports/:jobId/status
+    - GET /reports/:jobId/download
+  admin_endpoints:
+    - GET /admin/audit
+    - GET /admin/health/dependencies
+
+health_and_readiness:
+  required_endpoints:
+    - GET /health
+    - GET /ready
+  dependencies_checked:
+    - database
+    - redis
+    - feature_flag_provider
+
+quality_gates:
+  runtime:
+    - Graceful shutdown path is tested
+    - Startup fails fast on invalid config
+  resilience:
+    - Retry with exponential backoff and jitter for external calls
+    - Circuit breaker or timeout policy on remote dependencies
+  compliance:
+    - Audit trail exists for admin and data-export actions
+    - PII handling follows redaction policy

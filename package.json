@@ -1,0 +1,20 @@
+{
+  "name": "ai-agent-workflows-tools",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Tooling for template parity validation",
+  "type": "module",
+  "scripts": {
+    "templates:validate-parity": "node --import tsx Templates/tools/validate-parity.ts --root .",
+    "templates:test-parity": "node --import tsx --test Templates/tools/validate-parity.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "yaml": "^2.8.1"
+  }
+}

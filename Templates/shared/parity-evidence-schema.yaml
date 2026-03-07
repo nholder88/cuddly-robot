@@ -1,0 +1,58 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$title: CapabilityParityEvidence
+$type: object
+additionalProperties: false
+required:
+  - parity_evidence
+properties:
+  parity_evidence:
+    type: array
+    minItems: 1
+    items:
+      $ref: '#/$defs/parityEvidenceItem'
+$defs:
+  parityEvidenceItem:
+    type: object
+    additionalProperties: false
+    required:
+      - capability_id
+      - implementation_location
+      - verification_method
+    properties:
+      capability_id:
+        type: string
+        pattern: '^CAP-[A-Z]+-[0-9]{3}$'
+      implementation_location:
+        oneOf:
+          - type: string
+            minLength: 1
+          - type: array
+            minItems: 1
+            uniqueItems: true
+            items:
+              type: string
+              minLength: 1
+      verification_method:
+        type: string
+        enum:
+          - unit_test
+          - integration_test
+          - e2e_test
+          - manual_check
+examples:
+  - parity_evidence:
+      - capability_id: CAP-FF-001
+        implementation_location:
+          - src/lib/feature-flags/evaluate.ts
+          - src/lib/feature-flags/provider-adapter.ts
+        verification_method: unit_test
+      - capability_id: CAP-REP-001
+        implementation_location: src/features/reports/report-definitions-client.ts
+        verification_method: integration_test
+x-invalidExamples:
+  - parity_evidence:
+      - capability_id: CAP-FF-001
+        implementation_location: ''
+        verification_method: smoke_test
+      - capability_id: CAP-REP-001
+        implementation_location: src/features/reports/report-definitions-client.ts

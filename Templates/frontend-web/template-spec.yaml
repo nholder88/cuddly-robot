@@ -1,0 +1,113 @@
+version: 1.0.0
+template: frontend-web
+purpose: Reusable baseline for dashboard and product UI applications.
+
+stack:
+  language: TypeScript
+  framework: Framework-agnostic web baseline
+  ui: Tailwind + shared design tokens
+  testing: Vitest + Playwright
+  state: Query client + local UI state
+
+required_env:
+  - APP_NAME
+  - ENVIRONMENT
+  - API_BASE_URL
+  - FEATURE_FLAG_PROVIDER
+  - ANALYTICS_WRITE_KEY
+  - SENTRY_DSN
+
+stack_env_aliases:
+  nextjs:
+    APP_NAME: NEXT_PUBLIC_APP_NAME
+    ENVIRONMENT: NEXT_PUBLIC_ENVIRONMENT
+    API_BASE_URL: NEXT_PUBLIC_API_BASE_URL
+    FEATURE_FLAG_PROVIDER: NEXT_PUBLIC_FEATURE_FLAG_PROVIDER
+    ANALYTICS_WRITE_KEY: NEXT_PUBLIC_ANALYTICS_WRITE_KEY
+    SENTRY_DSN: NEXT_PUBLIC_SENTRY_DSN
+  sveltekit:
+    APP_NAME: PUBLIC_APP_NAME
+    ENVIRONMENT: PUBLIC_ENVIRONMENT
+    API_BASE_URL: PUBLIC_API_BASE_URL
+    FEATURE_FLAG_PROVIDER: PUBLIC_FEATURE_FLAG_PROVIDER
+    ANALYTICS_WRITE_KEY: PUBLIC_ANALYTICS_WRITE_KEY
+    SENTRY_DSN: PUBLIC_SENTRY_DSN
+  angular:
+    APP_NAME: NG_APP_NAME
+    ENVIRONMENT: NG_ENVIRONMENT
+    API_BASE_URL: NG_API_BASE_URL
+    FEATURE_FLAG_PROVIDER: NG_FEATURE_FLAG_PROVIDER
+    ANALYTICS_WRITE_KEY: NG_ANALYTICS_WRITE_KEY
+    SENTRY_DSN: NG_SENTRY_DSN
+
+required_folders:
+  - src/app
+  - src/components
+  - src/features
+  - src/lib/api
+  - src/lib/feature-flags
+  - src/lib/telemetry
+  - src/lib/auth
+  - src/lib/reporting
+  - src/admin
+
+required_components:
+  - name: AppShell
+    responsibility: Global layout, navigation, breadcrumb, and app chrome.
+  - name: AuthGate
+    responsibility: Route-level auth and role checks.
+  - name: FeatureFlagGate
+    responsibility: Conditional rendering by flag and audience.
+  - name: DataTable
+    responsibility: Sorting, filtering, pagination, and export hook.
+  - name: FormContainer
+    responsibility: Validation, submission states, and error summary.
+  - name: EmptyState
+    responsibility: Default empty-state pattern.
+  - name: ErrorState
+    responsibility: Standardized recoverable error UX.
+  - name: LoadingState
+    responsibility: Skeleton and async loading UX.
+  - name: ConfirmDialog
+    responsibility: Destructive-action confirmation flow.
+  - name: ToastCenter
+    responsibility: User feedback for success/warning/error.
+  - name: AdminLayout
+    responsibility: Shared layout for admin pages.
+
+required_hooks:
+  - name: useFeatureFlag
+    output: boolean | variant
+  - name: useCurrentUser
+    output: identity and roles
+  - name: useAuditTrail
+    output: timeline data for entities
+  - name: useReportExport
+    output: csv/json export actions
+  - name: useTelemetry
+    output: structured event sender
+
+reporting_admin_hooks:
+  report_routes:
+    - /reports
+    - /reports/[reportId]
+  admin_routes:
+    - /admin
+    - /admin/feature-flags
+    - /admin/audit
+  expected_api_integrations:
+    - GET /api/reports/definitions
+    - POST /api/reports/run
+    - GET /api/admin/feature-flags
+    - PATCH /api/admin/feature-flags/:flagKey
+
+quality_gates:
+  accessibility:
+    - Keyboard navigation for all interactive elements
+    - Color contrast >= WCAG AA
+  observability:
+    - Correlation ID is attached to every API call
+    - Client errors are sent to telemetry provider
+  consistency:
+    - Reuse shared components before creating new local variants
+    - Feature-flag usage goes through FeatureFlagGate/useFeatureFlag

@@ -1,0 +1,27 @@
+version: 1.0.0
+template: backend-rust
+purpose: Axum service baseline with capability parity.
+
+framework:
+  name: Axum
+  language: Rust
+  data_access: sqlx
+
+required_capabilities:
+  - CAP-FF-001
+  - CAP-FF-002
+  - CAP-REP-001
+  - CAP-REP-002
+  - CAP-ADM-001
+  - CAP-OBS-001
+  - CAP-SEC-001
+  - CAP-DATA-001
+  - CAP-OPS-001
+
+implementation_guidance:
+  logging: tracing + structured JSON subscriber
+  auth: JWT extraction middleware + policy checks
+  mapping: DTO/domain/db structs + explicit conversions
+  health: /health and /ready handlers with dependency probes
+  flags: Provider adapter trait + local cache mode
+  reporting: Background task queue with status/download endpoints

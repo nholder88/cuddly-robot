@@ -1,0 +1,27 @@
+version: 1.0.0
+template: backend-dotnet
+purpose: ASP.NET Core baseline with capability parity.
+
+framework:
+  name: ASP.NET Core
+  language: C#
+  data_access: Entity Framework Core
+
+required_capabilities:
+  - CAP-FF-001
+  - CAP-FF-002
+  - CAP-REP-001
+  - CAP-REP-002
+  - CAP-ADM-001
+  - CAP-OBS-001
+  - CAP-SEC-001
+  - CAP-DATA-001
+  - CAP-OPS-001
+
+implementation_guidance:
+  logging: Serilog with structured enrichers
+  auth: JwtBearer + policy-based authorization
+  mapping: Mapster or AutoMapper profiles with tests
+  health: AspNetCore HealthChecks for db/cache/provider
+  flags: Provider adapter interface + admin endpoints
+  reporting: Async report jobs with status endpoint

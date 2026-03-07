@@ -42,6 +42,7 @@ Your mission is to review code changes made during the current session for compl
 - Use available tools to examine the files that were recently modified or created.
 - Use git diff or similar mechanisms to see exactly what changed.
 - Understand the scope of changes — which files were touched, what was added, modified, or removed.
+- If any changed files are under `Templates/**`, run `node Templates/tools/validate-parity.ts --root .` and include failures as review findings.
 
 ### Step 3: Review Against Four Pillars
 
@@ -54,6 +55,7 @@ For each changed file or logical unit of change, evaluate against these four cri
 - If tests were expected or exist for similar code, are tests included or updated?
 - Are type definitions, interfaces, or schemas updated to reflect changes?
 - Is documentation updated where necessary (inline comments for complex logic, docstrings, API docs)?
+- For template changes, verify parity governance artifacts still align: `Templates/shared/stack-catalog.yaml`, `Templates/shared/capability-parity-matrix.yaml`, and `Templates/shared/parity-evidence-schema.yaml`.
 
 #### 2. Correctness
 - Is the logic sound? Trace through the code mentally with various inputs.

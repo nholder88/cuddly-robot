@@ -1,0 +1,68 @@
+version: 1.0.0
+name: platform-contracts
+purpose: Shared contracts to keep frontend/backend implementations consistent.
+
+cross_cutting_capabilities:
+  feature_flags:
+    contract:
+      - key: string
+      - enabled: boolean
+      - variant: string | null
+      - evaluatedAt: iso_timestamp
+    api:
+      - GET /admin/feature-flags
+      - PATCH /admin/feature-flags/:flagKey
+
+  reporting:
+    report_definition:
+      - reportId: string
+      - title: string
+      - filters: array
+      - exportFormats: [csv, json]
+    report_job:
+      - jobId: string
+      - status: queued | running | complete | failed
+      - requestedBy: string
+      - createdAt: iso_timestamp
+    api:
+      - GET /reports/definitions
+      - POST /reports/run
+      - GET /reports/:jobId/status
+      - GET /reports/:jobId/download
+
+  admin_dashboard:
+    required_panels:
+      - system_health
+      - dependency_status
+      - audit_activity
+      - feature_flag_overrides
+    api:
+      - GET /admin/health/dependencies
+      - GET /admin/audit
+
+observability_contract:
+  correlation:
+    header: x-correlation-id
+    required_end_to_end: true
+  telemetry_events:
+    required_fields:
+      - eventName
+      - timestamp
+      - correlationId
+      - actorId
+      - outcome
+      - source
+  error_contract:
+    response_shape:
+      - code: string
+      - message: string
+      - correlationId: string
+
+governance:
+  drift_policy:
+    - Pull requests must not remove required contracts silently
+    - Any contract change requires template version bump
+  versioning:
+    - Major for breaking contract changes
+    - Minor for additive changes
+    - Patch for clarification and docs-only changes

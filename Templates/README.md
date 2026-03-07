@@ -1,0 +1,46 @@
+# Template Projects Baseline
+
+This folder defines reusable, opinionated project templates so new applications start with consistent architecture, security, observability, feature flags, and admin/reporting hooks.
+
+## Goal
+
+Create repeatable projects where:
+- Frontend apps start with the same core component model.
+- Backend services start with the same environment, security, logging, and mapping patterns.
+- Cross-cutting capabilities (feature flags, reporting, admin dashboards) are designed in from day one.
+
+## Files
+
+- `frontend-web/template-spec.yaml`: Generic frontend baseline.
+- `frontend-nextjs/template-spec.yaml`: Next.js-specific baseline.
+- `frontend-sveltekit/template-spec.yaml`: SvelteKit-specific baseline.
+- `frontend-angular/template-spec.yaml`: Angular-specific baseline.
+- `backend-service/template-spec.yaml`: Generic Node/NestJS backend baseline.
+- `backend-dotnet/template-spec.yaml`: ASP.NET Core backend baseline.
+- `backend-python/template-spec.yaml`: FastAPI backend baseline.
+- `backend-go/template-spec.yaml`: Go/Fiber backend baseline.
+- `backend-java/template-spec.yaml`: Spring Boot backend baseline.
+- `backend-rust/template-spec.yaml`: Axum backend baseline.
+- `*/.env.example`: Stack-specific environment baselines.
+- `shared/platform-contracts.yaml`: Contracts shared across frontend/backend.
+- `shared/capability-parity-matrix.yaml`: Required functionality parity across stacks.
+- `shared/stack-catalog.yaml`: Canonical stack-to-template mapping.
+- `scaffold-prompt.md`: Prompt template for running these standards through the agents.
+
+## Operating Model
+
+1. Start with `shared/platform-contracts.yaml` as source of truth.
+2. Instantiate frontend and backend specs for the project.
+	Frontend state management is framework-specific:
+	- Next.js: Zustand + TanStack Query
+	- SvelteKit: Svelte stores + TanStack Query
+	- Angular: NgRx + RxJS
+3. Use `scaffold-prompt.md` with `architect-planner` or `orchestrator` to generate concrete files.
+4. Enforce drift checks in code review: reject PRs that remove required baseline capabilities without explicit approval.
+5. Enforce capability parity with `shared/capability-parity-matrix.yaml` so functionality is equivalent across language choices.
+
+## Governance
+
+- Update template specs first, then project implementations.
+- Version template changes in git and tag breaking changes.
+- Keep required keys stable; add new keys as optional before promoting to required.

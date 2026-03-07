@@ -89,6 +89,7 @@ INPUT
 Before running any agent, classify the task:
 
 **Task Type:**
+
 - `NEW_PROJECT` — Greenfield application or service
 - `NEW_FEATURE` — Adding a feature to an existing codebase
 - `BUG_FIX` — Fixing a defect with a known or suspected cause
@@ -96,11 +97,13 @@ Before running any agent, classify the task:
 - `SPEC_ONLY` — User wants planning artifacts only, no implementation
 
 **Complexity:**
+
 - `TRIVIAL` — Single file, obvious change, no architectural impact
 - `MODERATE` — Multiple files, some design decisions, clear scope
 - `COMPLEX` — Spans services, requires architectural decisions, high risk
 
 **Context Available:**
+
 - Check if a spec, PBI, architecture doc, or CLAUDE.md exists
 - Check if relevant tests exist
 - Note the primary language and framework from `package.json`, `*.csproj`, `go.mod`, etc.
@@ -136,11 +139,13 @@ Use classification to decide which stages to skip. Document the classification a
 **Invoke:** `architect-planner`
 
 **Pass in:**
+
 - Task description
 - Stage 1 findings (assumptions, risks)
 - Existing codebase context (tech stack, conventions, existing architecture docs if present)
 
 **Gate:** Output must include:
+
 - At minimum one architecture diagram (Mermaid)
 - A backlog with at least one task per component affected
 - Every task has acceptance criteria and a completion checklist
@@ -158,11 +163,13 @@ Use classification to decide which stages to skip. Document the classification a
 **Invoke:** `pbi-clarifier`
 
 **Pass in:**
+
 - The backlog item(s) or raw feature description
 - Architecture doc from Stage 2 (if produced)
 - Tech stack and file structure context
 
 **Gate:** Each PBI must have:
+
 - Functional AC in Given/When/Then format covering happy path, error path, and at least one edge case
 - Technical AC referencing actual files, models, or API patterns
 - Ordered implementation steps
@@ -178,21 +185,22 @@ Use classification to decide which stages to skip. Document the classification a
 
 **Select implementer by detected language/framework:**
 
-| Language / Framework | Agent |
-|---------------------|-------|
+| Language / Framework                                                    | Agent                    |
+| ----------------------------------------------------------------------- | ------------------------ |
 | TypeScript, JavaScript, React, Next.js, Vue, SvelteKit, NestJS, Express | `typescript-implementer` |
-| Next.js + Skeleton UI specifically | `nextjs-skeleton-expert` |
-| Python, Django, FastAPI, Flask | `python-implementer` |
-| C# / .NET, ASP.NET Core, Blazor | `csharp-implementer` |
-| Rust, Actix, Axum | `rust-implementer` |
-| GraphQL schema/resolvers (any language) | `graphql-specialist` |
-| SQL queries / schema | `sql-specialist` |
-| MongoDB queries / schema | `mongodb-specialist` |
-| Redis / caching | `redis-specialist` |
+| Next.js + Skeleton UI specifically                                      | `nextjs-skeleton-expert` |
+| Python, Django, FastAPI, Flask                                          | `python-implementer`     |
+| C# / .NET, ASP.NET Core, Blazor                                         | `csharp-implementer`     |
+| Rust, Actix, Axum                                                       | `rust-implementer`       |
+| GraphQL schema/resolvers (any language)                                 | `graphql-specialist`     |
+| SQL queries / schema                                                    | `sql-specialist`         |
+| MongoDB queries / schema                                                | `mongodb-specialist`     |
+| Redis / caching                                                         | `redis-specialist`       |
 
 **If multiple languages are involved**, run implementers sequentially, passing the output of each as context for the next. Never run two implementers on the same files simultaneously.
 
 **Pass in:**
+
 - AC map in scope (AC IDs + concise stage-relevant bullets)
 - Spec/artifact pointers for deep context (only fetch full sections if blocked)
 - Architecture doc (if produced)
@@ -200,9 +208,11 @@ Use classification to decide which stages to skip. Document the classification a
 - Specific instruction: "Do not mark complete until build passes and you have run the test suite."
 
 **Gate:**
+
 - Build must pass (`npm run build`, `dotnet build`, `cargo build`, etc.)
 - No new linting errors introduced
 - Implementation covers all acceptance criteria in scope (by AC ID mapping)
+- If any files in `Templates/**` were modified, `node Templates/tools/validate-parity.ts --root .` must pass before Stage 4 can be marked complete.
 
 **On gate failure:** Retry implementation once with the specific failure output. If it fails again, escalate.
 
@@ -213,6 +223,7 @@ Use classification to decide which stages to skip. Document the classification a
 **Skip when:** No UI components, pages, or client-side views were created or modified. Pure backend, API-only, or infrastructure changes skip this stage entirely.
 
 **Run when:** Any of the following are true:
+
 - A new component, page, layout, or view was created
 - An existing component or page was visually modified
 - Styling classes were added or changed on any element
@@ -221,6 +232,7 @@ Use classification to decide which stages to skip. Document the classification a
 **Invoke:** `ui-ux-sentinel`
 
 **Pass in:**
+
 - Full list of UI files created or modified in Stage 4 (`.tsx`, `.jsx`, `.svelte`, `.vue`, `.html`)
 - The framework and design system in use (e.g. "Next.js 15 + Skeleton UI + Tailwind 4")
 - The Skeleton theme in use (e.g. `data-theme="cerberus"`) if applicable
@@ -228,6 +240,7 @@ Use classification to decide which stages to skip. Document the classification a
 - Instruction: "Review all files for hardcoded colors and theme token violations (Pillar 1) first — these are the highest-priority findings. Then review all six pillars. Report every Blocker and Risk."
 
 **Gate — PASS conditions (ALL must be true):**
+
 - Zero Blocker findings
 - Theme Compliance Score is `Pass` or `Conditional` (≤ 3 Risk-level token violations)
 - UX Quality Score ≥ 3/5 on every pillar
@@ -244,6 +257,7 @@ Use classification to decide which stages to skip. Document the classification a
 5. Track iteration count
 
 **Max iterations:** 2 fix loops. After 2 failed iterations, escalate to user with:
+
 - The persistent findings table
 - A specific question for each unresolved finding (e.g. "Finding #3 requires an empty state component — should I create a shared `EmptyState` component or an inline message?")
 
@@ -258,6 +272,7 @@ Run test agents based on what was implemented. These can be run in parallel if b
 **Invoke:** `backend-unit-test-specialist`
 
 **Pass in:**
+
 - List of files modified in Stage 4
 - AC IDs in scope + only the test-relevant acceptance bullets
 - Pointer to full spec artifact (optional, on-demand)
@@ -296,6 +311,7 @@ Run test agents based on what was implemented. These can be run in parallel if b
 **Invoke:** `code-documenter`
 
 **Pass in:**
+
 - List of new or modified public symbols
 - Instruction: "Document all exported functions, classes, and types. Match the existing doc style in the project."
 
@@ -310,6 +326,7 @@ Run test agents based on what was implemented. These can be run in parallel if b
 **Invoke:** `code-review-sentinel`
 
 **Pass in:**
+
 - Files changed since the last review cycle (plus any high-risk dependencies they touch)
 - Acceptance criteria map (AC IDs + only criteria relevant to changed files)
 - Architecture doc (if produced)
@@ -317,10 +334,12 @@ Run test agents based on what was implemented. These can be run in parallel if b
 - Instruction: "Review against the four pillars: Completeness, Correctness, Conciseness, Readability. Score each 1-5."
 
 **Gate — PASS conditions (ALL must be true):**
+
 - No Critical Issues (`🔴`) remain
 - Completeness score ≥ 4
 - Correctness score ≥ 4
 - Overall score ≥ 4
+- If template artifacts changed, parity validator output is attached and passing (`node Templates/tools/validate-parity.ts --root .`).
 
 **Gate — FIX LOOP (on failure):**
 
@@ -330,6 +349,7 @@ Run test agents based on what was implemented. These can be run in parallel if b
 4. Track iteration count in pipeline log
 
 **Max iterations:** 3 fix loops. If the gate still fails after 3 iterations, escalate to user with:
+
 - The current review output
 - A summary of what was attempted in each iteration
 - Specific questions about unresolved issues
@@ -355,6 +375,7 @@ Result: [Pass / Fail / Escalate]
 Use the `todo` tool to maintain a live pipeline log throughout execution. Create one todo list per pipeline run named `Pipeline: [task-slug]`.
 
 Track each stage as:
+
 - `TODO` — Not yet started
 - `IN_PROGRESS` — Currently running
 - `PASS` — Gate passed, moving on
@@ -366,6 +387,7 @@ Track each stage as:
 **Add a UI scope flag to intake:**
 
 During Stage 0 classification, also determine:
+
 - `HAS_UI: true/false` — Does this task touch any frontend components, pages, or views?
 - `UI_FRAMEWORK: [Skeleton+Next.js / React / Vue / SvelteKit / other]` — Which framework and design system?
 - `DESIGN_SYSTEM: [Skeleton / plain Tailwind / custom tokens / none]` — Is a token-based design system in use?
@@ -373,6 +395,7 @@ During Stage 0 classification, also determine:
 These flags determine whether Stage 4.5 runs and which variant of the UI/UX review to request.
 
 Example todo items (updated):
+
 ```
 [IN_PROGRESS] STAGE 0: Intake — classify task type, complexity, UI scope
 [PASS]        STAGE 1: Assumption Review — 2 Risks found, carried forward
@@ -393,6 +416,7 @@ In addition to the `todo` list, maintain an append-only pipeline progress file s
 `agent-progress/pipeline-[task-slug].md`
 
 Rules:
+
 - Create `agent-progress/` if it does not exist.
 - Create the file during **Stage 0** (Intake) and append after **every stage gate** (PASS / SKIP / BLOCKED / FAIL / ESCALATE).
 - Do not overwrite prior entries. Append a new section for each stage transition and each fix-loop iteration.
@@ -409,18 +433,23 @@ Use this exact section template for each append:
 **Iteration (if fix loop):** [e.g. Stage 4 Iteration 2/3]
 
 ### Actions Taken
+
 - [what you did / what agents you invoked]
 
 ### Files Created or Modified
+
 - `path/to/file` — [what changed]
 
 ### Outcome
+
 [what changed in pipeline state, what passed/failed, what artifact is now available]
 
 ### Blockers / Open Questions
+
 [items or "None"]
 
 ### Suggested Next Step
+
 [next stage or escalation question]
 ```
 
@@ -438,24 +467,29 @@ When invoking each agent, pass a **lean context package**. Include only stage-re
 **Pipeline Stage:** [Stage N of 7]
 
 **Token Budget:**
+
 - Target: [e.g. <= 1200 tokens for implementation handoffs]
 - Hard max: [e.g. <= 1800 tokens unless escalated]
 
 **Tech Stack:**
+
 - Language: [e.g. TypeScript]
 - Framework: [e.g. Next.js 15 + Skeleton UI]
 - Test Runner: [e.g. Vitest]
 - Package Manager: [e.g. pnpm]
 
 **Files In Scope (Stage-Scoped):**
+
 - [path/to/file.ts] — [what was done]
 
 **Spec / Acceptance Criteria (Compressed):**
+
 - AC IDs in scope: [AC-1, AC-3]
 - Stage-relevant AC bullets only (max 12 bullets)
 - Artifact pointers: [path/to/spec.md#section, path/to/pbi.md#AC]
 
 **Risks to Watch:**
+
 - [Risk IDs + one-line summary]
 
 **Project Conventions:**
@@ -480,6 +514,7 @@ When escalating to the user, always include:
 5. **Resume Instructions** — Tell the user exactly what to say to resume the pipeline after they've answered
 
 Example escalation:
+
 ```
 🚨 Pipeline Escalated — Stage 7, Iteration 3/3
 
@@ -516,6 +551,7 @@ When the pipeline completes (all gates pass), produce a final report:
 **Stages Run:** [list with PASS/SKIP]
 
 ### Artifacts Produced
+
 - Architecture doc: [path if created]
 - PBI spec: [path if created]
 - Files created: [list]
@@ -524,6 +560,7 @@ When the pipeline completes (all gates pass), produce a final report:
 - Docs added: [count and symbols documented]
 
 ### UI/UX Review Score (if applicable)
+
 - Theme Compliance: [Pass / Conditional / Fail / N/A]
 - Visual Hierarchy: [1-5 / N/A]
 - Accessibility: [1-5 / N/A]
@@ -531,6 +568,7 @@ When the pipeline completes (all gates pass), produce a final report:
 - Consistency: [1-5 / N/A]
 
 ### Code Review Score
+
 - Completeness: [X/5]
 - Correctness: [X/5]
 - Conciseness: [X/5]
@@ -538,9 +576,11 @@ When the pipeline completes (all gates pass), produce a final report:
 - Overall: [X/5]
 
 ### Risks Carried Forward
+
 [Any Stage 1 risks that were noted but not blocking]
 
 ### Suggested Next Steps
+
 [e.g. "Run E2E tests against staging", "Deploy to preview", "Update API docs"]
 ```
 

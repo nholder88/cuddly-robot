@@ -1,0 +1,36 @@
+version: 1.0.0
+template: frontend-sveltekit
+purpose: SvelteKit frontend baseline with consistent platform hooks.
+
+framework:
+  name: SvelteKit
+  rendering: SSR + SPA hybrid
+  language: TypeScript
+
+state_management:
+  server_state: TanStack Query for Svelte
+  client_state: Writable/derived Svelte stores
+  form_state: Superforms + Zod
+  guidance:
+    - Keep async data in query cache
+    - Keep UI state in colocated Svelte stores by feature
+
+required_capabilities:
+  - CAP-FF-001
+  - CAP-FF-002
+  - CAP-REP-001
+  - CAP-REP-002
+  - CAP-ADM-001
+  - CAP-OBS-001
+  - CAP-SEC-001
+
+required_routes:
+  - /reports
+  - /admin
+  - /admin/feature-flags
+  - /admin/audit
+
+required_integrations:
+  - feature_flag_client_adapter
+  - telemetry_provider_adapter
+  - correlation_id_http_client

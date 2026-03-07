@@ -1,0 +1,27 @@
+parity_evidence:
+  - capability_id: CAP-FF-001
+    implementation_location:
+      - src/lib/feature-flags/evaluate.ts
+      - src/lib/feature-flags/provider-adapter.ts
+    verification_method: unit_test
+  - capability_id: CAP-FF-002
+    implementation_location: src/features/admin/feature-flags/update-flag.ts
+    verification_method: integration_test
+  - capability_id: CAP-REP-001
+    implementation_location: src/features/reports/definitions/get-report-definitions.ts
+    verification_method: integration_test
+  - capability_id: CAP-REP-002
+    implementation_location: src/features/reports/run/run-report.ts
+    verification_method: e2e_test
+  - capability_id: CAP-ADM-001
+    implementation_location:
+      - src/features/admin/dashboard/dependencies-panel.tsx
+      - src/features/admin/dashboard/audit-panel.tsx
+      - src/features/admin/dashboard/feature-flag-panel.tsx
+    verification_method: manual_check
+  - capability_id: CAP-OBS-001
+    implementation_location: src/lib/telemetry/correlation-client.ts
+    verification_method: unit_test
+  - capability_id: CAP-SEC-001
+    implementation_location: src/lib/auth/auth-guard.ts
+    verification_method: integration_test

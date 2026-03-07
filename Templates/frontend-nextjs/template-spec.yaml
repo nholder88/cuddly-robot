@@ -1,0 +1,36 @@
+version: 1.0.0
+template: frontend-nextjs
+purpose: Next.js frontend baseline with consistent platform hooks.
+
+framework:
+  name: Next.js
+  rendering: App Router + Server Components where appropriate
+  language: TypeScript
+
+state_management:
+  server_state: TanStack Query
+  client_state: Zustand
+  form_state: React Hook Form + Zod
+  guidance:
+    - Keep server state in query cache
+    - Keep UI state in feature-local Zustand stores
+
+required_capabilities:
+  - CAP-FF-001
+  - CAP-FF-002
+  - CAP-REP-001
+  - CAP-REP-002
+  - CAP-ADM-001
+  - CAP-OBS-001
+  - CAP-SEC-001
+
+required_routes:
+  - /reports
+  - /admin
+  - /admin/feature-flags
+  - /admin/audit
+
+required_integrations:
+  - feature_flag_client_adapter
+  - telemetry_provider_adapter
+  - correlation_id_http_client

@@ -117,3 +117,44 @@ flowchart LR
 ```
 
 SQL, MongoDB, Redis, and GraphQL specialists follow the same pattern (→ code-review-sentinel, backend-unit-test-specialist, docker-architect or ui-test-specialist).
+
+---
+
+## Template Projects Baseline
+
+If you want repeatable, consistent project starts, use the template system in `Templates/`:
+
+- `Templates/frontend-web/template-spec.yaml`
+- `Templates/frontend-nextjs/template-spec.yaml`
+- `Templates/frontend-sveltekit/template-spec.yaml`
+- `Templates/frontend-angular/template-spec.yaml`
+- `Templates/backend-service/template-spec.yaml`
+- `Templates/backend-dotnet/template-spec.yaml`
+- `Templates/backend-python/template-spec.yaml`
+- `Templates/backend-go/template-spec.yaml`
+- `Templates/backend-java/template-spec.yaml`
+- `Templates/backend-rust/template-spec.yaml`
+- `Templates/shared/platform-contracts.yaml`
+- `Templates/shared/capability-parity-matrix.yaml`
+- `Templates/shared/stack-catalog.yaml`
+- `Templates/scaffold-prompt.md`
+
+This provides a common baseline for env vars, security, logging, data mapping, feature flags, reporting hooks, and admin dashboard integration points so teams stop re-solving the same setup per project.
+
+### Template Parity Validator
+
+The file `Templates/tools/validate-parity.ts` is repository tooling, not an application definition. It validates template governance across:
+
+- Stack coverage between `Templates/shared/stack-catalog.yaml` and `Templates/shared/capability-parity-matrix.yaml`
+- Required capability coverage in each stack template spec
+- Parity evidence schema compliance (`Templates/shared/parity-evidence-schema.yaml`)
+
+Run it from the repo root:
+
+```bash
+npm install
+npm run templates:test-parity
+npm run templates:validate-parity
+```
+
+Use this check whenever `Templates/**` files change to prevent parity drift across framework and language variants.

@@ -1,0 +1,46 @@
+version: 1.0.0
+name: stack-catalog
+purpose: Canonical list of supported stacks and which template files define them.
+
+frontend:
+  - key: nextjs
+    framework: Next.js
+    spec: Templates/frontend-nextjs/template-spec.yaml
+    env: Templates/frontend-nextjs/.env.example
+    state_management: Zustand + TanStack Query
+  - key: sveltekit
+    framework: SvelteKit
+    spec: Templates/frontend-sveltekit/template-spec.yaml
+    env: Templates/frontend-sveltekit/.env.example
+    state_management: Svelte stores + TanStack Query
+  - key: angular
+    framework: Angular
+    spec: Templates/frontend-angular/template-spec.yaml
+    env: Templates/frontend-angular/.env.example
+    state_management: NgRx + RxJS services
+
+backend:
+  - key: node_nestjs
+    framework: NestJS
+    spec: Templates/backend-service/template-spec.yaml
+    env: Templates/backend-service/.env.example
+  - key: dotnet
+    framework: ASP.NET Core
+    spec: Templates/backend-dotnet/template-spec.yaml
+    env: Templates/backend-dotnet/.env.example
+  - key: python
+    framework: FastAPI
+    spec: Templates/backend-python/template-spec.yaml
+    env: Templates/backend-python/.env.example
+  - key: go
+    framework: Fiber
+    spec: Templates/backend-go/template-spec.yaml
+    env: Templates/backend-go/.env.example
+  - key: java
+    framework: Spring Boot
+    spec: Templates/backend-java/template-spec.yaml
+    env: Templates/backend-java/.env.example
+  - key: rust
+    framework: Axum
+    spec: Templates/backend-rust/template-spec.yaml
+    env: Templates/backend-rust/.env.example
