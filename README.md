@@ -156,6 +156,11 @@ Documentation scope is split intentionally:
 
 The **orchestrator** agent runs the full pipeline for a task: validate → plan → clarify → implement → test → document → review → fix. It delegates to specialist agents in sequence and enforces quality gates. For the full stage-by-stage flow, gates, and escalation rules, see **[Implementation/orchestrator.md](Implementation/orchestrator.md)**.
 
+Pipeline timing note:
+
+- Pipeline run timing is tracked as the duration of the orchestration session (from the first stage entry to the final stage entry).
+- It is not intended as a benchmark of command execution speed at each individual step.
+
 ---
 
 ## Agent Handoffs (Logical Flow)

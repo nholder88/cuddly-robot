@@ -237,7 +237,7 @@ Use classification to decide which stages to skip. Document the classification a
 | ----------------------------------------------------------------------- | ------------------------ |
 | TypeScript, JavaScript, React, Next.js, Vue, SvelteKit, NestJS, Express | `typescript-implementer` |
 | Next.js + Skeleton UI specifically                                      | `nextjs-skeleton-expert` |
-| Angular (any version), Angular Material                                | `angular-implementer`    |
+| Angular (any version), Angular Material                                 | `angular-implementer`    |
 | Python, Django, FastAPI, Flask                                          | `python-implementer`     |
 | C# / .NET, ASP.NET Core, Blazor                                         | `csharp-implementer`     |
 | Rust, Actix, Axum                                                       | `rust-implementer`       |
