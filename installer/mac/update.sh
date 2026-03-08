@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SETUP_SCRIPT="$SCRIPT_DIR/setup.sh"
+DEFAULT_SOURCE_REPO="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 INSTALL_ROOT="${HOME}/Library/Application Support/ai-agent-workflows-pack"
 SOURCE_REPO_PATH=""
@@ -48,6 +49,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -f "$SETUP_SCRIPT" ]] || fail "Setup script not found next to update script: $SETUP_SCRIPT"
+
+if [[ -z "$SOURCE_REPO_PATH" ]] && [[ -d "$DEFAULT_SOURCE_REPO/VS Code/agents" ]] && [[ -d "$DEFAULT_SOURCE_REPO/Templates" ]]; then
+  SOURCE_REPO_PATH="$DEFAULT_SOURCE_REPO"
+  log_info "Using local source repo next to installer scripts: $SOURCE_REPO_PATH"
+fi
 
 MANIFEST_PATH="$INSTALL_ROOT/install-manifest.json"
 if [[ -z "$SOURCE_REPO_PATH" ]] && [[ -f "$MANIFEST_PATH" ]] && command -v python3 >/dev/null 2>&1; then

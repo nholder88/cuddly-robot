@@ -30,6 +30,9 @@ try {
 
     $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
     $setupScriptPath = Join-Path $scriptRoot "Setup.ps1"
+    $defaultSourceRepoPath = Split-Path -Parent $scriptRoot
+    $defaultAgentsPath = Join-Path $defaultSourceRepoPath "VS Code\agents"
+    $defaultTemplatesPath = Join-Path $defaultSourceRepoPath "Templates"
 
     if (-not (Test-Path -LiteralPath $setupScriptPath -PathType Leaf)) {
         Fail "Setup script not found next to Update script: $setupScriptPath"
@@ -37,16 +40,25 @@ try {
 
     $manifestPath = Join-Path $InstallRoot "install-manifest.json"
 
-    if ((-not $PSBoundParameters.ContainsKey("SourceRepoPath")) -and (Test-Path -LiteralPath $manifestPath)) {
-        try {
-            $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-            if ($null -ne $manifest.sourceRepoPath -and $manifest.sourceRepoPath.ToString().Trim().Length -gt 0) {
-                $SourceRepoPath = $manifest.sourceRepoPath.ToString()
-                Write-Info "Using source repo from manifest: $SourceRepoPath"
+    if (-not $PSBoundParameters.ContainsKey("SourceRepoPath")) {
+        if ((Test-Path -LiteralPath $defaultAgentsPath -PathType Container) -and (Test-Path -LiteralPath $defaultTemplatesPath -PathType Container)) {
+            $SourceRepoPath = $defaultSourceRepoPath
+            Write-Info "Using local source repo next to installer scripts: $SourceRepoPath"
+        }
+        elseif (Test-Path -LiteralPath $manifestPath) {
+            try {
+                $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+                if ($null -ne $manifest.sourceRepoPath -and $manifest.sourceRepoPath.ToString().Trim().Length -gt 0) {
+                    $SourceRepoPath = $manifest.sourceRepoPath.ToString()
+                    Write-Info "Using source repo from manifest: $SourceRepoPath"
+                }
+            }
+            catch {
+                Write-Info "Manifest exists but could not be parsed. Falling back to Setup.ps1 default source repo resolution."
             }
         }
-        catch {
-            Write-Info "Manifest exists but could not be parsed. Falling back to default source repo resolution."
+        else {
+            Write-Info "No manifest source available; falling back to Setup.ps1 default source repo resolution."
         }
     }
 

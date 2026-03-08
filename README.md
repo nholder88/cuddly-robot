@@ -7,7 +7,7 @@ A Repo of the custom Cursor or VS Code Agents I have created.
 If you want a one-time install that places this pack directly into the Windows prompts folders used by VS Code and Cursor, use the scripts in `installer/`.
 
 - `installer/Setup.ps1`: install or refresh the local pack
-- `installer/Update.ps1`: update using the recorded manifest/source repo
+- `installer/Update.ps1`: update using the local repo beside the script (fallback: recorded manifest source repo)
 - `installer/Uninstall.ps1`: remove installed payload and settings references
 
 Default managed install root (manifest + metadata):
@@ -17,7 +17,7 @@ Default managed install root (manifest + metadata):
 Default payload target paths:
 
 - VS Code: `%APPDATA%\Code\User\prompts`
-- Cursor: `%APPDATA%\Cursor\User\prompts`
+- Cursor: `%USERPROFILE%\.cursor\agents`
 
 What gets installed per target:
 
@@ -41,7 +41,7 @@ Optional flags:
 - `-InstallRoot "C:\some\custom\path"`
 - `-SourceRepoPath "D:\ai-agent-workflows"` (Setup/Update)
 - `-VSCodePromptsPath "C:\Users\<user>\AppData\Roaming\Code\User\prompts"` (Setup)
-- `-CursorPromptsPath "C:\Users\<user>\AppData\Roaming\Cursor\User\prompts"` (Setup)
+- `-CursorPromptsPath "C:\Users\<user>\.cursor\agents"` (Setup)
 - `-SkipVSCode` (Setup)
 - `-SkipCursor` (Setup)
 - `-RemoveInstallRoot` (Uninstall, remove empty root folder)
@@ -68,7 +68,7 @@ Output is written to `installer/msi/out/AI-Agent-Workflows-Pack.msi` by default.
 If you want the same workflow on macOS, use scripts in `installer/mac/`.
 
 - `installer/mac/setup.sh`: install or refresh agents/templates into prompts folders
-- `installer/mac/update.sh`: re-run setup using manifest source path
+- `installer/mac/update.sh`: re-run setup using the local repo beside the script (fallback: manifest source path)
 - `installer/mac/uninstall.sh`: remove files recorded by installer metadata
 
 Default managed install root:

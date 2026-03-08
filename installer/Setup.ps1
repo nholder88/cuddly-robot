@@ -127,6 +127,7 @@ try {
 
     $localAppData = [Environment]::GetFolderPath("LocalApplicationData")
     $roamingAppData = [Environment]::GetFolderPath("ApplicationData")
+    $userProfile = [Environment]::GetFolderPath("UserProfile")
 
     if ([string]::IsNullOrWhiteSpace($InstallRoot)) {
         $InstallRoot = Join-Path $localAppData "ai-agent-workflows-pack"
@@ -135,7 +136,7 @@ try {
         $VSCodePromptsPath = Join-Path $roamingAppData "Code\User\prompts"
     }
     if ([string]::IsNullOrWhiteSpace($CursorPromptsPath)) {
-        $CursorPromptsPath = Join-Path $roamingAppData "Cursor\User\prompts"
+        $CursorPromptsPath = Join-Path $userProfile ".cursor\agents"
     }
 
     if ([string]::IsNullOrWhiteSpace($SourceRepoPath)) {
