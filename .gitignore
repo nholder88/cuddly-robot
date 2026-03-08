@@ -1,1 +1,6 @@
 node_modules/
+
+# Transient orchestration execution logs (do not track)
+agent-progress/runs/
+agent-progress/pipeline-*.md
+agent-progress/stage-*.md

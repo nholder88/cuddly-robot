@@ -522,7 +522,7 @@ Repository convention for `agent-progress/`:
 - Transient run logs go in `agent-progress/runs/` and are not tracked.
 
 Rules:
-- Create `agent-progress/` if it does not exist.
+- Create `agent-progress/runs/` if it does not exist.
 - Create the file during **Stage 0** (Intake) and append after **every stage gate** (PASS / SKIP / BLOCKED / FAIL / ESCALATE).
 - Do not overwrite prior entries. Append a new section for each stage transition and each fix-loop iteration.
 - Include the active stage, gate result, agents invoked, files affected, and any blockers/open questions.
@@ -679,7 +679,7 @@ When the pipeline completes (all gates pass), produce a final report:
 [e.g. "Run E2E tests against staging", "Deploy to preview", "Update API docs"]
 ```
 
-Before producing the final report, append a final completion entry to `agent-progress/pipeline-[task-slug].md`.
+Before producing the final report, append a final completion entry to `agent-progress/runs/pipeline-[task-slug].md`.
 
 ---
 
