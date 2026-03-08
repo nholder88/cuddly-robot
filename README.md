@@ -1,6 +1,31 @@
 # AI Agent Workflows 
 
-A Repo of the custom Cursor or VS Code Agents I have created.
+This repository contains a curated pack of custom AI agents, workflow docs, and template governance tooling for VS Code and Cursor.
+
+## What this repo contains
+
+- `VS Code/agents/`: 30 custom `*.agent.md` definitions (orchestrator, implementers, reviewers, testers, specialists)
+- `Templates/`: 10 stack templates plus shared contracts/workflows and parity validator tooling
+- `Implementation/`, `Design/`, `Review/`, `Testing/`, `Documentation/`, `Database/`, `Deploy/`, `Strategy/`: companion docs for each specialist domain
+- `installer/`: Windows PowerShell installer/update/uninstall scripts, macOS shell equivalents, and optional MSI/PKG builders
+
+## Quick start
+
+1. Clone this repo.
+2. Run the installer for your OS.
+3. Open VS Code or Cursor and use the installed agents/prompts.
+
+Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\installer\Setup.ps1
+```
+
+macOS:
+
+```bash
+bash ./installer/mac/setup.sh
+```
 
 ## Quick Windows Installer
 
@@ -118,27 +143,42 @@ Output path:
 
 Note: `pkgbuild` must be available (Xcode command line tools).
 
-## Adding agents in Cursor and VS Code
+## Using agents in VS Code and Cursor
 
-### Cursor
+### Recommended: install to user paths
 
-Agents are loaded from the workspace. To use these agents in Cursor:
+This repo ships install scripts that copy agents and templates into user-level paths so they are available across projects.
 
-1. **Use this repo as your workspace** — Open the `cuddly-robot` folder in Cursor. The agents in `.vscode/agents/` (files named `*.agent.md`) appear in the agent picker in Chat (e.g. Cmd/Ctrl+I or the agent dropdown).
-2. **Use in another project** — Copy the `.vscode/agents` folder from this repo into your project’s `.vscode/` directory. After you open that project in Cursor, the agents show up in the picker.
+Windows default targets:
 
-No extra config is required; Cursor discovers `.agent.md` files under `.vscode/agents/` in the open workspace.
+- VS Code: `%APPDATA%\Code\User\prompts`
+- Cursor: `%USERPROFILE%\.cursor\agents`
 
-### VS Code (with Copilot / AI chat)
+macOS default targets:
 
-VS Code custom agents use the same `.agent.md` format but look in different places by default:
+- VS Code: `~/Library/Application Support/Code/User/prompts`
+- Cursor: `~/Library/Application Support/Cursor/User/prompts`
 
-1. **Default location** — VS Code looks for custom agents in **`.github/agents`** in your workspace (not `.vscode/agents`). To use this repo’s agents in a project:
-   - Copy the contents of this repo’s `.vscode/agents/` into your project’s **`.github/agents/`** (create the folder if needed), or
-   - Keep the files as `.agent.md`; only the folder path differs.
-2. **Custom agent locations** — To load agents from another path (e.g. this repo or a shared folder), set **`chat.agentFilesLocations`** in VS Code settings (or `chat.copilot.chat.agentFilesLocations` depending on your version) to include that path. Then VS Code will discover `.agent.md` files there as well.
+What gets copied:
 
-To manage agents: run **“Chat: Open Chat Customizations”** from the Command Palette, or type `/agents` in chat. You can show/hide agents in the dropdown from there.
+- `VS Code/agents/*.agent.md` -> target prompts/agents path
+- `Templates/**` -> `<target>/Templates/**`
+
+Use these commands after pulling repo changes:
+
+- Windows: `powershell -ExecutionPolicy Bypass -File .\installer\Update.ps1`
+- macOS: `bash ./installer/mac/update.sh`
+
+### Manual use (no installer)
+
+If you do not want to run installers, you can manually copy:
+
+- All files from `VS Code/agents/` into your desired agent/prompts folder
+- The `Templates/` directory into the same target root as `Templates/`
+
+### Workspace authoring
+
+When editing or creating agents in this repo, author files in `VS Code/agents/` and then run update to push changes to your installed location(s).
 
 ---
 
