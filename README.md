@@ -2,6 +2,122 @@
 
 A Repo of the custom Cursor or VS Code Agents I have created.
 
+## Quick Windows Installer
+
+If you want a one-time install that places this pack directly into the Windows prompts folders used by VS Code and Cursor, use the scripts in `installer/`.
+
+- `installer/Setup.ps1`: install or refresh the local pack
+- `installer/Update.ps1`: update using the recorded manifest/source repo
+- `installer/Uninstall.ps1`: remove installed payload and settings references
+
+Default managed install root (manifest + metadata):
+
+`%LOCALAPPDATA%\ai-agent-workflows-pack`
+
+Default payload target paths:
+
+- VS Code: `%APPDATA%\Code\User\prompts`
+- Cursor: `%APPDATA%\Cursor\User\prompts`
+
+What gets installed per target:
+
+- `VS Code/agents/*.agent.md` -> `<prompts-path>`
+- `Templates/**` -> `<prompts-path>/Templates/**`
+
+The installer writes `<install-root>/install-manifest.json` with source repo path, install root, package version, timestamp metadata, and a per-target file inventory for safe uninstall.
+
+### Usage
+
+Run from PowerShell in repo root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\installer\Setup.ps1
+powershell -ExecutionPolicy Bypass -File .\installer\Update.ps1
+powershell -ExecutionPolicy Bypass -File .\installer\Uninstall.ps1
+```
+
+Optional flags:
+
+- `-InstallRoot "C:\some\custom\path"`
+- `-SourceRepoPath "D:\ai-agent-workflows"` (Setup/Update)
+- `-VSCodePromptsPath "C:\Users\<user>\AppData\Roaming\Code\User\prompts"` (Setup)
+- `-CursorPromptsPath "C:\Users\<user>\AppData\Roaming\Cursor\User\prompts"` (Setup)
+- `-SkipVSCode` (Setup)
+- `-SkipCursor` (Setup)
+- `-RemoveInstallRoot` (Uninstall, remove empty root folder)
+- `-Force` (override safety checks where applicable)
+
+### Build MSI Bundle
+
+You can generate a bundled MSI (WiX v4+) that installs this pack and runs the quick setup script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\installer\msi\Build-Msi.ps1
+```
+
+Output is written to `installer/msi/out/AI-Agent-Workflows-Pack.msi` by default.
+
+### Caveats
+
+- Installer copies directly into prompts folders and does not edit editor settings JSON.
+- Uninstall removes only files tracked in the manifest file inventory.
+- MSI build requires WiX CLI (`wix`) available on `PATH`.
+
+## Quick macOS Installer
+
+If you want the same workflow on macOS, use scripts in `installer/mac/`.
+
+- `installer/mac/setup.sh`: install or refresh agents/templates into prompts folders
+- `installer/mac/update.sh`: re-run setup using manifest source path
+- `installer/mac/uninstall.sh`: remove files recorded by installer metadata
+
+Default managed install root:
+
+- `~/Library/Application Support/ai-agent-workflows-pack`
+
+Default prompts target paths:
+
+- VS Code: `~/Library/Application Support/Code/User/prompts`
+- Cursor: `~/Library/Application Support/Cursor/User/prompts`
+
+What gets installed per target:
+
+- `VS Code/agents/*.agent.md` -> `<prompts-path>`
+- `Templates/**` -> `<prompts-path>/Templates/**`
+
+Usage:
+
+```bash
+bash ./installer/mac/setup.sh
+bash ./installer/mac/update.sh
+bash ./installer/mac/uninstall.sh
+```
+
+Optional flags:
+
+- `--install-root "/custom/path"`
+- `--source-repo-path "/path/to/ai-agent-workflows"` (setup/update)
+- `--vscode-prompts-path "/Users/<user>/Library/Application Support/Code/User/prompts"` (setup)
+- `--cursor-prompts-path "/Users/<user>/Library/Application Support/Cursor/User/prompts"` (setup)
+- `--skip-vscode` (setup)
+- `--skip-cursor` (setup)
+- `--remove-install-root` (uninstall)
+- `--force` (setup/update/uninstall compatibility flag)
+
+### Build macOS PKG Bundle
+
+You can build a `.pkg` installer on macOS:
+
+```bash
+bash ./installer/mac/pkg/build-pkg.sh
+```
+
+Output path:
+
+- `installer/mac/pkg/out/AI-Agent-Workflows-Pack-macOS.pkg`
+
+Note: `pkgbuild` must be available (Xcode command line tools).
+
 ## Adding agents in Cursor and VS Code
 
 ### Cursor
