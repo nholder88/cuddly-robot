@@ -25,3 +25,22 @@ implementation_guidance:
   health: AspNetCore HealthChecks for db/cache/provider
   flags: Provider adapter interface + admin endpoints
   reporting: Async report jobs with status endpoint
+
+ci_command_contract:
+  stack_key: dotnet
+  slots:
+    unit_test: dotnet test --configuration Release --filter "Category!=E2E"
+    e2e_test: dotnet test --configuration Release --filter "Category=E2E"
+
+testing_starter:
+  unit:
+    slot: unit_test
+    command: dotnet test --configuration Release --filter "Category!=E2E"
+    framework: xUnit
+    sample_target: tests/Unit/ReportingServiceTests.cs
+  e2e:
+    slot: e2e_test
+    command: dotnet test --configuration Release --filter "Category=E2E"
+    mode: api
+    semantics: API smoke/integration suite for readiness, reporting, and admin endpoints.
+    sample_target: tests/E2E/ApiSmokeTests.cs

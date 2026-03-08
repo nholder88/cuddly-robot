@@ -1,0 +1,26 @@
+version: 1.0.0
+name: ci-command-contract
+purpose: Canonical command slots shared by stack mappings and reusable workflows.
+
+slots:
+  install:
+    required: true
+    description: Install dependencies for a clean workspace.
+  lint:
+    required: true
+    description: Execute static analysis and formatting checks.
+  build:
+    required: true
+    description: Compile/build the project artifacts.
+  unit_test:
+    required: true
+    description: Run unit test baseline.
+  e2e_test:
+    required: true
+    description: Run frontend browser E2E or backend API smoke/integration suite.
+  package:
+    required: true
+    description: Create release artifact output.
+  deploy:
+    required: true
+    description: Trigger environment deployment step.

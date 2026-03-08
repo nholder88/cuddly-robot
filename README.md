@@ -32,6 +32,10 @@ To manage agents: run **“Chat: Open Chat Customizations”** from the Command 
 
 Agents can hand off to other agents via the **handoffs** defined in each agent’s YAML frontmatter. The diagram below summarizes **outbound** handoffs between specialists (strategy → design → review → implementation → testing → deploy/doc). Use the handoff buttons that appear after a response to move to the next agent with context and a pre-filled prompt.
 
+Documentation scope is split intentionally:
+- `code-documenter` handles in-code and API reference documentation.
+- `markdown-technical-writer` handles non-code docs/config/agent files.
+
 ### 2. Full pipeline (orchestrator)
 
 The **orchestrator** agent runs the full pipeline for a task: validate → plan → clarify → implement → test → document → review → fix. It delegates to specialist agents in sequence and enforces quality gates. For the full stage-by-stage flow, gates, and escalation rules, see **[Implementation/orchestrator.md](Implementation/orchestrator.md)**.
@@ -67,6 +71,7 @@ flowchart LR
   subgraph other [Deploy / Doc / DB]
     docker[docker-architect]
     doc[code-documenter]
+    mdWriter[markdown-technical-writer]
   end
 
   ideaValidator -->|Plan architecture| architect
@@ -99,6 +104,7 @@ flowchart LR
   tsImpl -->|Unit frontend| frontendTest
   tsImpl -->|Unit backend| backendTest
   tsImpl -->|Add docs| doc
+  tsImpl -->|Edit non-code docs| mdWriter
   tsImpl -->|Plan architecture| architect
 
   docker -->|Review configs| codeReview
@@ -114,6 +120,10 @@ flowchart LR
   doc -->|Review docs| codeReview
   doc -->|Check assumptions| assumptionRev
   doc -->|Add tests| frontendTest
+
+  mdWriter -->|Review docs| codeReview
+  mdWriter -->|Check assumptions| assumptionRev
+  mdWriter -->|In-code/API docs| doc
 ```
 
 SQL, MongoDB, Redis, and GraphQL specialists follow the same pattern (→ code-review-sentinel, backend-unit-test-specialist, docker-architect or ui-test-specialist).
@@ -137,6 +147,12 @@ If you want repeatable, consistent project starts, use the template system in `T
 - `Templates/shared/platform-contracts.yaml`
 - `Templates/shared/capability-parity-matrix.yaml`
 - `Templates/shared/stack-catalog.yaml`
+- `Templates/shared/ci-command-contract.yaml`
+- `Templates/shared/ci-stack-command-matrix.yaml`
+- `Templates/shared/workflows/ci-pr.yaml`
+- `Templates/shared/workflows/ci-main.yaml`
+- `Templates/shared/workflows/cd-release.yaml`
+- `Templates/shared/workflows/cd-deploy.yaml`
 - `Templates/scaffold-prompt.md`
 
 This provides a common baseline for env vars, security, logging, data mapping, feature flags, reporting hooks, and admin dashboard integration points so teams stop re-solving the same setup per project.
@@ -147,7 +163,17 @@ The file `Templates/tools/validate-parity.ts` is repository tooling, not an appl
 
 - Stack coverage between `Templates/shared/stack-catalog.yaml` and `Templates/shared/capability-parity-matrix.yaml`
 - Required capability coverage in each stack template spec
+- CI command contract completeness from `Templates/shared/ci-command-contract.yaml`
+- Stack command matrix coverage from `Templates/shared/ci-stack-command-matrix.yaml`
+- Required reusable workflow templates in `Templates/shared/workflows/`
+- Unit and E2E starter metadata presence/alignment in stack template specs
 - Parity evidence schema compliance (`Templates/shared/parity-evidence-schema.yaml`)
+
+Reusable workflow templates resolve stack commands through slot names:
+
+- CI order is fixed: `install -> lint -> build -> unit_test -> e2e_test`
+- CD templates use `package` and `deploy` slots
+- Backend E2E baseline is API smoke/integration (not browser-only)
 
 Run it from the repo root:
 

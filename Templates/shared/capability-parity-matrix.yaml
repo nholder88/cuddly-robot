@@ -63,14 +63,107 @@ parity_gate:
     - verification_method
 
 frontend_stack_mapping:
-  nextjs: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001]
-  sveltekit: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001]
-  angular: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001]
+  nextjs:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+    ]
+  sveltekit:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+    ]
+  angular:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+    ]
 
 backend_stack_mapping:
-  node_nestjs: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001, CAP-DATA-001, CAP-OPS-001]
-  dotnet: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001, CAP-DATA-001, CAP-OPS-001]
-  python: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001, CAP-DATA-001, CAP-OPS-001]
-  go: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001, CAP-DATA-001, CAP-OPS-001]
-  java: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001, CAP-DATA-001, CAP-OPS-001]
-  rust: [CAP-FF-001, CAP-FF-002, CAP-REP-001, CAP-REP-002, CAP-ADM-001, CAP-OBS-001, CAP-SEC-001, CAP-DATA-001, CAP-OPS-001]
+  node_nestjs:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+      CAP-DATA-001,
+      CAP-OPS-001,
+    ]
+  dotnet:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+      CAP-DATA-001,
+      CAP-OPS-001,
+    ]
+  python:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+      CAP-DATA-001,
+      CAP-OPS-001,
+    ]
+  go:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+      CAP-DATA-001,
+      CAP-OPS-001,
+    ]
+  java:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+      CAP-DATA-001,
+      CAP-OPS-001,
+    ]
+  rust:
+    [
+      CAP-FF-001,
+      CAP-FF-002,
+      CAP-REP-001,
+      CAP-REP-002,
+      CAP-ADM-001,
+      CAP-OBS-001,
+      CAP-SEC-001,
+      CAP-DATA-001,
+      CAP-OPS-001,
+    ]

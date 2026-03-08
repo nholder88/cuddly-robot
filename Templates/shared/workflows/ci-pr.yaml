@@ -1,0 +1,38 @@
+version: 1.0.0
+name: ci-pr-workflow-template
+purpose: Reusable pull-request CI workflow using canonical command slots.
+
+inputs:
+  stack_key: "{{ stack_key }}"
+  working_directory: "{{ working_directory }}"
+
+slot_tokens:
+  - install
+  - lint
+  - build
+  - unit_test
+  - e2e_test
+
+steps:
+  - name: Install dependencies
+    slot: install
+  - name: Lint
+    slot: lint
+  - name: Build
+    slot: build
+  - name: Unit tests
+    slot: unit_test
+  - name: E2E tests
+    slot: e2e_test
+
+execution:
+  command_source: Templates/shared/ci-stack-command-matrix.yaml
+  run_in_working_directory: true
+  command_reference_format: "{{ matrix.stacks[stack_key][slot] }}"
+
+governance:
+  concurrency_group: "ci-pr-{{ stack_key }}"
+  cancel_in_progress: true
+  path_filters:
+    - "Templates/**"
+    - "src/**"

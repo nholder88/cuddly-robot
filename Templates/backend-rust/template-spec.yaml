@@ -25,3 +25,22 @@ implementation_guidance:
   health: /health and /ready handlers with dependency probes
   flags: Provider adapter trait + local cache mode
   reporting: Background task queue with status/download endpoints
+
+ci_command_contract:
+  stack_key: rust
+  slots:
+    unit_test: cargo test --lib
+    e2e_test: cargo test --test '*'
+
+testing_starter:
+  unit:
+    slot: unit_test
+    command: cargo test --lib
+    framework: cargo test
+    sample_target: src/reporting/service_tests.rs
+  e2e:
+    slot: e2e_test
+    command: cargo test --test '*'
+    mode: api
+    semantics: API smoke/integration suite for health, reporting, and admin endpoints.
+    sample_target: tests/api_smoke.rs

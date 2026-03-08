@@ -1,0 +1,77 @@
+version: 1.0.0
+name: ci-stack-command-matrix
+purpose: Per-stack command resolution for the canonical CI/CD slot contract.
+
+stacks:
+  nextjs:
+    install: npm ci
+    lint: npm run lint
+    build: npm run build
+    unit_test: npm run test:unit
+    e2e_test: npm run test:e2e
+    package: npm pack
+    deploy: npm run deploy
+  sveltekit:
+    install: npm ci
+    lint: npm run lint
+    build: npm run build
+    unit_test: npm run test:unit
+    e2e_test: npm run test:e2e
+    package: npm pack
+    deploy: npm run deploy
+  angular:
+    install: npm ci
+    lint: npm run lint
+    build: npm run build
+    unit_test: npm run test:unit
+    e2e_test: npm run test:e2e
+    package: npm pack
+    deploy: npm run deploy
+  node_nestjs:
+    install: npm ci
+    lint: npm run lint
+    build: npm run build
+    unit_test: npm run test:unit
+    e2e_test: npm run test:e2e
+    package: npm pack
+    deploy: npm run deploy
+  dotnet:
+    install: dotnet restore
+    lint: dotnet format --verify-no-changes
+    build: dotnet build --configuration Release
+    unit_test: dotnet test --configuration Release --filter "Category!=E2E"
+    e2e_test: dotnet test --configuration Release --filter "Category=E2E"
+    package: dotnet pack --configuration Release
+    deploy: echo "configure deployment target"
+  python:
+    install: pip install -r requirements-dev.txt
+    lint: ruff check .
+    build: python -m build
+    unit_test: pytest -m "not e2e"
+    e2e_test: pytest -m "e2e or smoke"
+    package: python -m build
+    deploy: echo "configure deployment target"
+  go:
+    install: go mod download
+    lint: go vet ./...
+    build: go build ./...
+    unit_test: go test ./... -short
+    e2e_test: go test ./... -run TestE2E
+    package: go build -o dist/service ./cmd/service
+    deploy: echo "configure deployment target"
+  java:
+    install: ./mvnw -q -DskipTests dependency:go-offline
+    lint: ./mvnw -q -DskipTests verify -P lint
+    build: ./mvnw -q -DskipTests package
+    unit_test: ./mvnw -q test
+    e2e_test: ./mvnw -q verify -Pe2e
+    package: ./mvnw -q -DskipTests package
+    deploy: echo "configure deployment target"
+  rust:
+    install: cargo fetch
+    lint: cargo clippy --all-targets -- -D warnings
+    build: cargo build --release
+    unit_test: cargo test --lib
+    e2e_test: cargo test --test '*'
+    package: cargo package --allow-dirty
+    deploy: echo "configure deployment target"

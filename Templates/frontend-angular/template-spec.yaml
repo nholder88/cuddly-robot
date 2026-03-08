@@ -34,3 +34,22 @@ required_integrations:
   - feature_flag_client_adapter
   - telemetry_provider_adapter
   - correlation_id_http_client
+
+ci_command_contract:
+  stack_key: angular
+  slots:
+    unit_test: npm run test:unit
+    e2e_test: npm run test:e2e
+
+testing_starter:
+  unit:
+    slot: unit_test
+    command: npm run test:unit
+    framework: Jest
+    sample_target: src/app/reports/report.service.spec.ts
+  e2e:
+    slot: e2e_test
+    command: npm run test:e2e
+    mode: browser
+    semantics: Browser journey for report and admin feature-flag flows.
+    sample_target: e2e/reporting-admin.e2e-spec.ts

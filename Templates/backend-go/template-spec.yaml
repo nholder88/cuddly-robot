@@ -25,3 +25,22 @@ implementation_guidance:
   health: /health and /ready dependency probes
   flags: Provider adapter interface + cache fallback
   reporting: Async job worker with status/download endpoints
+
+ci_command_contract:
+  stack_key: go
+  slots:
+    unit_test: go test ./... -short
+    e2e_test: go test ./... -run TestE2E
+
+testing_starter:
+  unit:
+    slot: unit_test
+    command: go test ./... -short
+    framework: testing package
+    sample_target: internal/reporting/service_test.go
+  e2e:
+    slot: e2e_test
+    command: go test ./... -run TestE2E
+    mode: api
+    semantics: API smoke/integration suite for health, reporting, and admin endpoints.
+    sample_target: internal/e2e/api_smoke_test.go

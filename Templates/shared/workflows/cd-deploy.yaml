@@ -1,0 +1,38 @@
+version: 1.0.0
+name: cd-deploy-workflow-template
+purpose: Reusable deploy template with environment and secret-name placeholders.
+
+inputs:
+  stack_key: "{{ stack_key }}"
+  working_directory: "{{ working_directory }}"
+  artifact_name: "{{ artifact_name }}"
+  deploy_environment: "{{ deploy_environment }}"
+  secrets_namespace: "{{ secrets_namespace }}"
+
+slot_tokens:
+  - package
+  - deploy
+
+required_placeholders:
+  - artifact_name
+  - deploy_environment
+  - secrets_namespace
+
+required_secret_placeholders:
+  - "{{ secrets_namespace }}_DEPLOY_TOKEN"
+  - "{{ secrets_namespace }}_DEPLOY_URL"
+
+steps:
+  - name: Package artifact
+    slot: package
+  - name: Deployment approval gate
+    run: "await-approval --environment {{ deploy_environment }}"
+  - name: Deploy artifact
+    slot: deploy
+    environment: "{{ deploy_environment }}"
+    secrets_namespace: "{{ secrets_namespace }}"
+
+execution:
+  command_source: Templates/shared/ci-stack-command-matrix.yaml
+  command_reference_format: "{{ matrix.stacks[stack_key][slot] }}"
+  least_privilege_guidance: Use environment-scoped credentials and minimal token permissions.

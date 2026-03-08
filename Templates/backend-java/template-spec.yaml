@@ -25,3 +25,22 @@ implementation_guidance:
   health: Spring Actuator health/readiness groups
   flags: Provider adapter with admin APIs
   reporting: Async report orchestration and job tracking
+
+ci_command_contract:
+  stack_key: java
+  slots:
+    unit_test: ./mvnw -q test
+    e2e_test: ./mvnw -q verify -Pe2e
+
+testing_starter:
+  unit:
+    slot: unit_test
+    command: ./mvnw -q test
+    framework: JUnit
+    sample_target: src/test/java/com/example/reporting/ReportingServiceTest.java
+  e2e:
+    slot: e2e_test
+    command: ./mvnw -q verify -Pe2e
+    mode: api
+    semantics: API smoke/integration suite for health, reporting, and admin endpoints.
+    sample_target: src/test/java/com/example/e2e/ApiSmokeIT.java

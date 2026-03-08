@@ -25,3 +25,22 @@ implementation_guidance:
   health: /health and /ready with dependency checks
   flags: Provider adapter with local fallback
   reporting: Background tasks/queue with status polling
+
+ci_command_contract:
+  stack_key: python
+  slots:
+    unit_test: pytest -m "not e2e"
+    e2e_test: pytest -m "e2e or smoke"
+
+testing_starter:
+  unit:
+    slot: unit_test
+    command: pytest -m "not e2e"
+    framework: pytest
+    sample_target: tests/unit/test_reporting_service.py
+  e2e:
+    slot: e2e_test
+    command: pytest -m "e2e or smoke"
+    mode: api
+    semantics: API smoke/integration suite for health, reporting, and admin endpoints.
+    sample_target: tests/e2e/test_api_smoke.py
