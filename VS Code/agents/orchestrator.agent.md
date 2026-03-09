@@ -233,21 +233,21 @@ Use classification to decide which stages to skip. Document the classification a
 
 **Select implementer by detected language/framework:**
 
-| Language / Framework                                    | Agent                             |
-| ------------------------------------------------------- | --------------------------------- |
-| Next.js frontend                                        | `nextjs-skeleton-expert`          |
-| SvelteKit frontend                                      | `sveltekit-skeleton-expert`       |
-| Angular (any version), Angular Material                 | `angular-implementer`             |
-| TypeScript/JavaScript backend (NestJS, Express, workers) | `typescript-backend-implementer` |
+| Language / Framework                                     | Agent                             |
+| -------------------------------------------------------- | --------------------------------- |
+| Next.js frontend                                         | `nextjs-skeleton-expert`          |
+| SvelteKit frontend                                       | `sveltekit-skeleton-expert`       |
+| Angular (any version), Angular Material                  | `angular-implementer`             |
+| TypeScript/JavaScript backend (NestJS, Express, workers) | `typescript-backend-implementer`  |
 | TypeScript/JavaScript frontend (React, Vue, Nuxt, other) | `typescript-frontend-implementer` |
-| TypeScript/JavaScript general or mixed scope            | `typescript-implementer`          |
-| Python, Django, FastAPI, Flask                                          | `python-implementer`     |
-| C# / .NET, ASP.NET Core, Blazor                                         | `csharp-implementer`     |
-| Rust, Actix, Axum                                                       | `rust-implementer`       |
-| GraphQL schema/resolvers (any language)                                 | `graphql-specialist`     |
-| SQL queries / schema                                                    | `sql-specialist`         |
-| MongoDB queries / schema                                                | `mongodb-specialist`     |
-| Redis / caching                                                         | `redis-specialist`       |
+| TypeScript/JavaScript general or mixed scope             | `typescript-implementer`          |
+| Python, Django, FastAPI, Flask                           | `python-implementer`              |
+| C# / .NET, ASP.NET Core, Blazor                          | `csharp-implementer`              |
+| Rust, Actix, Axum                                        | `rust-implementer`                |
+| GraphQL schema/resolvers (any language)                  | `graphql-specialist`              |
+| SQL queries / schema                                     | `sql-specialist`                  |
+| MongoDB queries / schema                                 | `mongodb-specialist`              |
+| Redis / caching                                          | `redis-specialist`                |
 
 **If multiple languages are involved**, run implementers sequentially, passing the output of each as context for the next. Never run two implementers on the same files simultaneously.
 
