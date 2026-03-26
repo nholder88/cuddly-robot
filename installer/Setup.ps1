@@ -12,6 +12,13 @@ param(
     [Parameter()]
     [string]$CursorPromptsPath,
 
+    # When provided, the .github/skills/ library is also copied into this
+    # workspace root at .github/skills/.  Agents reference skills with the path
+    # .github/skills/<name>/SKILL.md, so skills must be present in the
+    # workspace where they will be used.
+    [Parameter()]
+    [string]$TargetWorkspaceRoot,
+
     [Parameter()]
     [switch]$SkipVSCode,
 
@@ -84,7 +91,9 @@ function Copy-AgentsAndTemplates {
         [Parameter(Mandatory = $true)][string]$AgentsSource,
         [Parameter(Mandatory = $true)][string]$TemplatesSource,
         [Parameter(Mandatory = $true)][string]$TargetPromptsPath,
-        [Parameter(Mandatory = $true)][string]$TargetName
+        [Parameter(Mandatory = $true)][string]$TargetName,
+        [Parameter()][string]$SkillsSource,
+        [Parameter()][string]$TargetWorkspaceRoot
     )
 
     Ensure-Directory -Path $TargetPromptsPath
@@ -112,13 +121,39 @@ function Copy-AgentsAndTemplates {
         $installedFiles += $targetFilePath
     }
 
+    # Install skills into the target workspace root at .github/skills/ when a
+    # workspace root is provided.  Skills are workspace-scoped in VS Code and
+    # activate the `skills:` references embedded in the agent frontmatter.
+    $skillFileCount = 0
+    $skillsTargetPath = $null
+    if (-not [string]::IsNullOrWhiteSpace($SkillsSource) -and
+        -not [string]::IsNullOrWhiteSpace($TargetWorkspaceRoot) -and
+        (Test-Path -LiteralPath $SkillsSource -PathType Container)) {
+
+        $skillsTargetPath = Join-Path $TargetWorkspaceRoot ".github\skills"
+        Ensure-Directory -Path $skillsTargetPath
+
+        Get-ChildItem -LiteralPath $SkillsSource -File -Recurse | ForEach-Object {
+            $trimChars = [char[]]([char]92, [char]47)
+            $relativePath = $_.FullName.Substring($SkillsSource.Length).TrimStart($trimChars)
+            $targetFilePath = Join-Path $skillsTargetPath $relativePath
+            $targetParent = Split-Path -Parent $targetFilePath
+            Ensure-Directory -Path $targetParent
+            Copy-Item -LiteralPath $_.FullName -Destination $targetFilePath -Force
+            $installedFiles += $targetFilePath
+            $skillFileCount++
+        }
+    }
+
     return [PSCustomObject]@{
         target            = $TargetName
         promptsPath       = $TargetPromptsPath
         templatesPath     = $templatesTargetPath
+        skillsPath        = $skillsTargetPath
         installedFiles    = $installedFiles
         agentFileCount    = (Get-ChildItem -LiteralPath $AgentsSource -File -Recurse | Measure-Object).Count
         templateFileCount = (Get-ChildItem -LiteralPath $TemplatesSource -File -Recurse | Measure-Object).Count
+        skillFileCount    = $skillFileCount
     }
 }
 
@@ -146,6 +181,7 @@ try {
     $repoRoot = Resolve-FullPath -Path $SourceRepoPath
     $agentsSource = Join-Path $repoRoot "VS Code\agents"
     $templatesSource = Join-Path $repoRoot "Templates"
+    $skillsSource = Join-Path $repoRoot ".github\skills"
 
     if (-not (Test-Path -LiteralPath $agentsSource -PathType Container)) {
         Fail "Required source folder not found: $agentsSource"
@@ -163,11 +199,11 @@ try {
     $targetResults = @()
 
     if (-not $SkipVSCode) {
-        $targetResults += (Copy-AgentsAndTemplates -AgentsSource $agentsSource -TemplatesSource $templatesSource -TargetPromptsPath $VSCodePromptsPath -TargetName "vscode")
+        $targetResults += (Copy-AgentsAndTemplates -AgentsSource $agentsSource -TemplatesSource $templatesSource -SkillsSource $skillsSource -TargetPromptsPath $VSCodePromptsPath -TargetName "vscode" -TargetWorkspaceRoot $TargetWorkspaceRoot)
     }
 
     if (-not $SkipCursor) {
-        $targetResults += (Copy-AgentsAndTemplates -AgentsSource $agentsSource -TemplatesSource $templatesSource -TargetPromptsPath $CursorPromptsPath -TargetName "cursor")
+        $targetResults += (Copy-AgentsAndTemplates -AgentsSource $agentsSource -TemplatesSource $templatesSource -SkillsSource $skillsSource -TargetPromptsPath $CursorPromptsPath -TargetName "cursor" -TargetWorkspaceRoot $TargetWorkspaceRoot)
     }
 
     if ($targetResults.Count -eq 0) {
@@ -195,6 +231,9 @@ try {
         Write-Host "Target [$($target.target)] prompts: $($target.promptsPath)"
         Write-Host "  Agents copied   : $($target.agentFileCount)"
         Write-Host "  Templates copied: $($target.templateFileCount)"
+        if ($target.skillFileCount -gt 0) {
+            Write-Host "  Skills copied   : $($target.skillFileCount) → $($target.skillsPath)"
+        }
     }
 
     if (-not $SkipVSCode) {
