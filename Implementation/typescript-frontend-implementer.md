@@ -88,6 +88,138 @@ Use this agent directly for React, Vue, Nuxt, and other TypeScript frontend work
 
 ---
 
+## Code Style & Naming Conventions
+
+| Element | Convention | Example |
+|---|---|---|
+| Component (React) | PascalCase, named export | `export function OrderList()` |
+| Component (Vue) | PascalCase file, `<script setup>` | `OrderList.vue` |
+| Props interface | PascalCase + `Props` | `OrderListProps` |
+| Hook (React) | camelCase, `use` prefix | `useOrders()`, `useAuth()` |
+| Composable (Vue) | camelCase, `use` prefix | `useOrders()` |
+| Store (Zustand/Pinia) | camelCase, `use` prefix | `useOrderStore` |
+| Variable / Parameter | camelCase | `orderCount`, `isLoading` |
+| Type / Interface | PascalCase | `Order`, `CreateOrderRequest` |
+| Enum | PascalCase (type + values) | `enum Status { Active, Archived }` |
+| Constant | UPPER_SNAKE_CASE or camelCase | `MAX_PAGE_SIZE`, `defaultFilters` |
+| Event handler | `handle` + event | `handleClick`, `handleSubmit` |
+| Boolean prop/var | `is`/`has`/`should` prefix | `isLoading`, `hasError`, `shouldRefetch` |
+| File (component) | PascalCase | `OrderList.tsx`, `OrderList.vue` |
+| File (hook/util) | camelCase | `useOrders.ts`, `formatDate.ts` |
+| File (test) | `.test.ts(x)` suffix | `OrderList.test.tsx` |
+| CSS module / class | camelCase or kebab-case | `styles.orderCard` or `order-card` |
+
+```typescript
+// ❌ Wrong — default export, no typed props, unclear naming
+export default function (props) {
+  const [d, setD] = useState(null);
+  return <div onClick={() => alert('hi')}>{props.t}</div>;
+}
+
+// ✅ Correct — named export, typed props, clear naming
+export interface OrderCardProps {
+  order: Order;
+  onSelect?: (order: Order) => void;
+}
+
+export function OrderCard({ order, onSelect }: OrderCardProps) {
+  const handleClick = () => onSelect?.(order);
+
+  return (
+    <article role="button" tabIndex={0} onClick={handleClick} onKeyDown={handleClick}>
+      <h3>{order.title}</h3>
+    </article>
+  );
+}
+```
+
+## Control Flow Patterns
+
+### Conditional rendering — explicit states, not ternary chains
+
+```typescript
+// ❌ Nested ternaries — hard to read and maintain
+return isLoading ? <Spinner /> : error ? <p>{error}</p> : data?.length
+  ? data.map(item => <Row key={item.id} item={item} />)
+  : <p>No data</p>;
+
+// ✅ Early returns — one condition per branch
+if (isLoading) return <OrderListSkeleton />;
+if (error) return <ErrorBanner message="Failed to load orders" />;
+if (!data?.length) return <EmptyState message="No orders yet" />;
+
+return (
+  <ul role="list">
+    {data.map(item => <OrderRow key={item.id} item={item} />)}
+  </ul>
+);
+```
+
+### Custom hooks — extract logic, return typed state
+
+```typescript
+// ❌ All logic inline in component — hard to test, hard to reuse
+function OrderList() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/orders')
+      .then(r => r.json())
+      .then(setOrders)
+      .catch(e => setError(e.message))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  // ... render
+}
+
+// ✅ Custom hook — testable, reusable, typed
+interface UseOrdersResult {
+  orders: Order[];
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => void;
+}
+
+function useOrders(): UseOrdersResult {
+  const { data, error, isLoading, mutate } = useSWR<Order[]>('/api/orders', fetcher);
+
+  return {
+    orders: data ?? [],
+    isLoading,
+    error: error?.message ?? null,
+    refetch: () => mutate(),
+  };
+}
+```
+
+### Event handlers — extract, name with `handle` prefix
+
+```typescript
+// ❌ Inline handlers — complex logic hidden in JSX
+<button onClick={() => {
+  if (items.length > 0) {
+    const total = items.reduce((sum, i) => sum + i.price, 0);
+    submitOrder({ items, total });
+    setSubmitted(true);
+  }
+}}>Submit</button>
+
+// ✅ Extracted handler — readable, testable
+function handleSubmit() {
+  if (items.length === 0) return;
+  const total = items.reduce((sum, i) => sum + i.price, 0);
+  submitOrder({ items, total });
+  setSubmitted(true);
+}
+
+<button type="button" onClick={handleSubmit}>Submit</button>
+```
+
+---
+
 ## Framework Patterns
 
 ### React / Vue / Nuxt (primary in this agent)
@@ -156,26 +288,303 @@ function handleSelect(item: Item) {
 </script>
 ```
 
-**State:** Pinia for shared state (detect from `package.json`).
+---
 
-### SvelteKit
+## State Management Patterns
 
-**Components:**
+Use the framework's most ergonomic and dev-toolable state solution. The goal is: **clear read/write patterns, named actions, DevTools inspection, and action replay when possible.**
+
+### React — Zustand (with DevTools middleware)
+
+Zustand is the recommended global state library for React projects. It has minimal boilerplate, no providers, and integrates with Redux DevTools for state inspection and action replay.
+
+Install: `npm i zustand`
+
+#### Defining a store
 
 ```typescript
-<script lang="ts">
-  export let title: string;
-  export let items: Item[] = [];
+// stores/useOrderStore.ts
+import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
 
-  let selected: Item | null = null;
+interface Order {
+  id: string;
+  title: string;
+  status: 'pending' | 'active' | 'completed';
+}
 
-  function handleSelect(item: Item) {
-    selected = item;
-  }
-</script>
+interface OrderState {
+  orders: Order[];
+  selectedId: string | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+interface OrderActions {
+  loadOrders: () => Promise<void>;
+  addOrder: (order: Order) => void;
+  removeOrder: (id: string) => void;
+  selectOrder: (id: string | null) => void;
+}
+
+export const useOrderStore = create<OrderState & OrderActions>()(
+  devtools(
+    immer((set) => ({
+      // State
+      orders: [],
+      selectedId: null,
+      isLoading: false,
+      error: null,
+
+      // Actions — each is a named function visible in DevTools
+      loadOrders: async () => {
+        set({ isLoading: true, error: null }, false, 'loadOrders/pending');
+        try {
+          const res = await fetch('/api/orders');
+          if (!res.ok) throw new Error(`Failed: ${res.status}`);
+          const orders = await res.json();
+          set({ orders, isLoading: false }, false, 'loadOrders/fulfilled');
+        } catch (err) {
+          set(
+            { isLoading: false, error: (err as Error).message },
+            false,
+            'loadOrders/rejected'
+          );
+        }
+      },
+
+      addOrder: (order) =>
+        set(
+          (state) => { state.orders.push(order); },
+          false,
+          'addOrder'
+        ),
+
+      removeOrder: (id) =>
+        set(
+          (state) => {
+            state.orders = state.orders.filter((o) => o.id !== id);
+            if (state.selectedId === id) state.selectedId = null;
+          },
+          false,
+          'removeOrder'
+        ),
+
+      selectOrder: (id) =>
+        set({ selectedId: id }, false, 'selectOrder'),
+    })),
+    { name: 'OrderStore' } // Name shown in Redux DevTools
+  )
+);
 ```
 
-**State:** Svelte stores (`writable`, `readable`, `derived`) or Svelte 5 runes (`$state`, `$derived`).
+#### Reading state in a component — selector pattern
+
+```typescript
+// ❌ Wrong — selecting the entire store causes unnecessary re-renders
+function OrderList() {
+  const store = useOrderStore();
+  // ...
+}
+
+// ✅ Correct — select only what you need (stable reference)
+function OrderList() {
+  const orders = useOrderStore((s) => s.orders);
+  const isLoading = useOrderStore((s) => s.isLoading);
+  const error = useOrderStore((s) => s.error);
+  const loadOrders = useOrderStore((s) => s.loadOrders);
+
+  useEffect(() => { loadOrders(); }, [loadOrders]);
+
+  if (isLoading) return <OrderListSkeleton />;
+  if (error) return <ErrorBanner message={error} />;
+  if (!orders.length) return <EmptyState message="No orders yet" />;
+
+  return (
+    <ul role="list">
+      {orders.map((order) => (
+        <OrderRow key={order.id} order={order} />
+      ))}
+    </ul>
+  );
+}
+```
+
+#### Derived state — compute outside the store
+
+```typescript
+// Derived data — compute in the component or a custom hook
+function useActiveOrders() {
+  return useOrderStore((s) => s.orders.filter((o) => o.status === 'active'));
+}
+
+function useSelectedOrder() {
+  return useOrderStore((s) =>
+    s.orders.find((o) => o.id === s.selectedId) ?? null
+  );
+}
+```
+
+#### Testing a Zustand store
+
+```typescript
+import { useOrderStore } from './useOrderStore';
+
+beforeEach(() => {
+  useOrderStore.setState({
+    orders: [],
+    selectedId: null,
+    isLoading: false,
+    error: null,
+  });
+});
+
+it('should add an order', () => {
+  const { addOrder } = useOrderStore.getState();
+  addOrder({ id: '1', title: 'Test', status: 'pending' });
+  expect(useOrderStore.getState().orders).toHaveLength(1);
+});
+
+it('should clear selection when removing selected order', () => {
+  const store = useOrderStore.getState();
+  store.addOrder({ id: '1', title: 'Test', status: 'active' });
+  store.selectOrder('1');
+  store.removeOrder('1');
+  expect(useOrderStore.getState().selectedId).toBeNull();
+});
+```
+
+### Vue — Pinia (with DevTools)
+
+Pinia is the official Vue state management library. It has built-in Vue DevTools support with time-travel debugging, action replay, and state editing. Detect from `package.json` (`pinia`).
+
+Install: `npm i pinia`
+
+#### Defining a store
+
+```typescript
+// stores/orderStore.ts
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import type { Order } from '@/types';
+
+export const useOrderStore = defineStore('orders', () => {
+  // State — reactive refs
+  const orders = ref<Order[]>([]);
+  const selectedId = ref<string | null>(null);
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
+
+  // Getters — computed properties
+  const selectedOrder = computed(() =>
+    orders.value.find((o) => o.id === selectedId.value) ?? null
+  );
+  const activeOrders = computed(() =>
+    orders.value.filter((o) => o.status === 'active')
+  );
+
+  // Actions — named functions
+  async function loadOrders() {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      const res = await fetch('/api/orders');
+      if (!res.ok) throw new Error(`Failed: ${res.status}`);
+      orders.value = await res.json();
+    } catch (err) {
+      error.value = (err as Error).message;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  function selectOrder(id: string | null) {
+    selectedId.value = id;
+  }
+
+  function addOrder(order: Order) {
+    orders.value.push(order);
+  }
+
+  function removeOrder(id: string) {
+    orders.value = orders.value.filter((o) => o.id !== id);
+    if (selectedId.value === id) selectedId.value = null;
+  }
+
+  return {
+    orders, selectedId, isLoading, error,
+    selectedOrder, activeOrders,
+    loadOrders, selectOrder, addOrder, removeOrder,
+  };
+});
+```
+
+#### Using a Pinia store in a component
+
+```vue
+<script setup lang="ts">
+import { useOrderStore } from '@/stores/orderStore';
+import { storeToRefs } from 'pinia';
+
+const orderStore = useOrderStore();
+
+// ✅ Use storeToRefs for reactive destructuring of state/getters
+const { orders, isLoading, error, activeOrders } = storeToRefs(orderStore);
+
+// Actions can be destructured directly (they are not reactive)
+const { loadOrders, selectOrder } = orderStore;
+
+onMounted(() => loadOrders());
+</script>
+
+<template>
+  <div v-if="isLoading"><LoadingSkeleton /></div>
+  <div v-else-if="error"><ErrorBanner :message="error" /></div>
+  <div v-else-if="!orders.length"><EmptyState message="No orders yet" /></div>
+  <ul v-else role="list">
+    <OrderRow
+      v-for="order in activeOrders"
+      :key="order.id"
+      :order="order"
+      @click="selectOrder(order.id)"
+    />
+  </ul>
+</template>
+```
+
+#### Testing a Pinia store
+
+```typescript
+import { setActivePinia, createPinia } from 'pinia';
+import { useOrderStore } from './orderStore';
+
+beforeEach(() => {
+  setActivePinia(createPinia());
+});
+
+it('should add an order', () => {
+  const store = useOrderStore();
+  store.addOrder({ id: '1', title: 'Test', status: 'pending' });
+  expect(store.orders).toHaveLength(1);
+});
+
+it('should compute active orders', () => {
+  const store = useOrderStore();
+  store.addOrder({ id: '1', title: 'A', status: 'active' });
+  store.addOrder({ id: '2', title: 'B', status: 'completed' });
+  expect(store.activeOrders).toHaveLength(1);
+});
+```
+
+### When to use what (all frameworks)
+
+| Scope | React | Vue |
+|---|---|---|
+| Component-local | `useState`, `useReducer` | `ref()`, `reactive()` |
+| Parent ↔ child (1–2 levels) | Props + callbacks | Props + emits |
+| Shared across feature/app | Zustand store | Pinia store |
+| Server cache (fetch + revalidate) | React Query / SWR | VueQuery / `useFetch` (Nuxt) |
 
 ---
 

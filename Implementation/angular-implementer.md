@@ -66,6 +66,38 @@ Use **web/fetch** to retrieve the latest content when implementing, migrating, o
 - **Tailwind CSS (Angular setup, compatibility, utilities):** https://tailwindcss.com/docs/installation/framework-guides/angular — Use when adding or configuring Tailwind in an Angular project. For style conflicts and `@apply`: https://tailwindcss.com/docs/compatibility and https://tailwindcss.com/docs/styling-with-utility-classes . For editor setup: https://tailwindcss.com/docs/editor-setup .
 - **CSS (cascade, transforms, view transitions):** https://developer.mozilla.org/en-US/docs/Web/CSS/Guides , https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_transforms , https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/View_transitions , https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Introduction — Use when reasoning about specificity, layers, or animations during style updates or Material → Tailwind conversion.
 
+## Code Style & Naming Conventions
+
+| Element | Convention | Example |
+|---|---|---|
+| Component class | PascalCase + `Component` | `OrderListComponent` |
+| Service class | PascalCase + `Service` | `OrderService` |
+| Directive class | PascalCase + `Directive` | `HighlightDirective` |
+| Pipe class | PascalCase + `Pipe` | `CurrencyFormatPipe` |
+| Guard / Interceptor | PascalCase + type | `AuthGuard`, `LoggingInterceptor` |
+| Interface / Type | PascalCase | `Order`, `CreateOrderRequest` |
+| Variable / Property | camelCase | `orderCount`, `isLoading` |
+| Signal | camelCase, descriptive | `orders = signal<Order[]>([])` |
+| Computed signal | camelCase | `activeOrders = computed(...)` |
+| Observable | camelCase + `$` suffix | `orders$`, `isLoading$` |
+| Method | camelCase, verb-first | `getOrders()`, `handleSubmit()` |
+| File | kebab-case + type suffix | `order-list.component.ts` |
+| Selector prefix | Project prefix, kebab-case | `app-order-list`, `feat-dashboard` |
+| Enum | PascalCase (type + values) | `enum OrderStatus { Pending, Shipped }` |
+| Constant | camelCase or UPPER_SNAKE_CASE | `defaultPageSize`, `MAX_RETRIES` |
+
+```typescript
+// ❌ Wrong — no type suffix, PascalCase file, no selector prefix
+// File: OrderList.ts
+@Component({ selector: 'order-list' })
+export class OrderList { ... }
+
+// ✅ Correct — kebab-case file, type suffix, prefixed selector
+// File: order-list.component.ts
+@Component({ selector: 'app-order-list' })
+export class OrderListComponent { ... }
+```
+
 ## Angular setup
 
 - **Standalone components** — Default; do not set `standalone: true` in Angular v20+.
@@ -121,6 +153,361 @@ Infer from the repo. Typical layout:
 - **styles.css** or **src/styles.css** — Global styles; `@import "tailwindcss"` if using Tailwind
 
 Match existing naming (kebab-case for files) and folder conventions.
+
+## Control Flow Patterns
+
+### Signals — prefer over manual subscription management
+
+```typescript
+// ❌ Manual subscription — leak risk, verbose
+@Component({ ... })
+export class OrderListComponent implements OnInit, OnDestroy {
+  orders: Order[] = [];
+  private destroy$ = new Subject<void>();
+
+  ngOnInit() {
+    this.orderService.getOrders().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(orders => this.orders = orders);
+  }
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+}
+
+// ✅ Signals + async resource — no subscriptions, automatic cleanup
+@Component({
+  template: `
+    @if (orders.isLoading()) {
+      <app-skeleton-list />
+    } @else if (orders.error()) {
+      <app-error-banner [message]="'Failed to load orders'" />
+    } @else if (!orders.value()?.length) {
+      <app-empty-state message="No orders yet" />
+    } @else {
+      <app-order-row *ngFor="let order of orders.value()" [order]="order" />
+    }
+  `
+})
+export class OrderListComponent {
+  private orderService = inject(OrderService);
+  orders = rxResource({ loader: () => this.orderService.getOrders() });
+}
+```
+
+### Template control flow — use `@if`, `@for`, `@switch`
+
+```typescript
+// ❌ Legacy structural directives
+<div *ngIf="isLoading; else content">Loading...</div>
+<ng-template #content>
+  <ul>
+    <li *ngFor="let item of items; trackBy: trackById">{{ item.name }}</li>
+  </ul>
+</ng-template>
+
+// ✅ Built-in control flow
+@if (isLoading()) {
+  <app-spinner />
+} @else {
+  <ul>
+    @for (item of items(); track item.id) {
+      <li>{{ item.name }}</li>
+    } @empty {
+      <p>No items found.</p>
+    }
+  </ul>
+}
+```
+
+### Error handling in services — typed errors, not console.log
+
+```typescript
+// ❌ Swallowed error
+getOrders(): Observable<Order[]> {
+  return this.http.get<Order[]>('/api/orders').pipe(
+    catchError(err => {
+      console.log(err);
+      return of([]);
+    })
+  );
+}
+
+// ✅ Typed error handling, propagated to caller
+getOrders(): Observable<Order[]> {
+  return this.http.get<Order[]>('/api/orders').pipe(
+    catchError((err: HttpErrorResponse) => {
+      if (err.status === 404) return of([]);
+      return throwError(() => new Error(`Failed to fetch orders: ${err.message}`));
+    })
+  );
+}
+```
+
+## State Management — NgRx Signal Store
+
+Use **NgRx Signal Store** (`@ngrx/signals`) for shared/global state. It integrates natively with Angular signals, has Redux DevTools support for state inspection and action replay, and is far more readable than classic NgRx Store.
+
+Install: `npm i @ngrx/signals`
+
+### Defining a store — feature-scoped, typed, inspectable
+
+```typescript
+// stores/order.store.ts
+import { signalStore, withState, withComputed, withMethods, patchState } from '@ngrx/signals';
+import { computed, inject } from '@angular/core';
+import { OrderService } from '../services/order.service';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { pipe, switchMap, tap } from 'rxjs';
+import { tapResponse } from '@ngrx/operators';
+
+export interface OrderState {
+  orders: Order[];
+  selectedId: string | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const initialState: OrderState = {
+  orders: [],
+  selectedId: null,
+  isLoading: false,
+  error: null,
+};
+
+export const OrderStore = signalStore(
+  { providedIn: 'root' },
+  withState(initialState),
+
+  // Derived data — computed signals, auto-tracked
+  withComputed((store) => ({
+    selectedOrder: computed(() =>
+      store.orders().find((o) => o.id === store.selectedId())
+    ),
+    activeOrders: computed(() =>
+      store.orders().filter((o) => o.status === 'active')
+    ),
+    orderCount: computed(() => store.orders().length),
+  })),
+
+  // Actions — named methods that patchState
+  withMethods((store, orderService = inject(OrderService)) => ({
+    selectOrder(id: string): void {
+      patchState(store, { selectedId: id });
+    },
+
+    clearSelection(): void {
+      patchState(store, { selectedId: null });
+    },
+
+    // Async action with rxMethod — observable-based, cancellable
+    loadOrders: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { isLoading: true, error: null })),
+        switchMap(() =>
+          orderService.getOrders().pipe(
+            tapResponse({
+              next: (orders) => patchState(store, { orders, isLoading: false }),
+              error: (err: Error) =>
+                patchState(store, { isLoading: false, error: err.message }),
+            })
+          )
+        )
+      )
+    ),
+
+    addOrder(order: Order): void {
+      patchState(store, { orders: [...store.orders(), order] });
+    },
+
+    removeOrder(id: string): void {
+      patchState(store, {
+        orders: store.orders().filter((o) => o.id !== id),
+        selectedId: store.selectedId() === id ? null : store.selectedId(),
+      });
+    },
+  }))
+);
+```
+
+### Reading state in a component — inject, read signals
+
+```typescript
+// ❌ Wrong — manual subscriptions, imperative state
+@Component({ ... })
+export class OrderListComponent implements OnInit {
+  orders: Order[] = [];
+  constructor(private store: Store) {}
+  ngOnInit() {
+    this.store.select(selectOrders).subscribe(o => this.orders = o);
+  }
+}
+
+// ✅ Correct — inject signal store, bind in template
+@Component({
+  template: `
+    @if (store.isLoading()) {
+      <app-skeleton-list />
+    } @else if (store.error()) {
+      <app-error-banner [message]="store.error()!" />
+    } @else if (!store.orderCount()) {
+      <app-empty-state message="No orders yet" />
+    } @else {
+      @for (order of store.activeOrders(); track order.id) {
+        <app-order-row
+          [order]="order"
+          [isSelected]="order.id === store.selectedId()"
+          (select)="store.selectOrder(order.id)" />
+      }
+    }
+  `,
+})
+export class OrderListComponent implements OnInit {
+  readonly store = inject(OrderStore);
+
+  ngOnInit() {
+    this.store.loadOrders();
+  }
+}
+```
+
+### Modifying state — always through store methods
+
+```typescript
+// ❌ Wrong — mutating state outside the store
+this.store.orders().push(newOrder);
+
+// ✅ Correct — call a store method
+this.store.addOrder(newOrder);
+this.store.removeOrder(orderId);
+this.store.selectOrder(orderId);
+```
+
+### DevTools — enable for action replay and state inspection
+
+```typescript
+// app.config.ts
+import { provideStore } from '@ngrx/store';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideStore(),
+    provideStoreDevtools({
+      maxAge: 25,             // Retain last 25 states for replay
+      logOnly: !isDevMode(),  // Restrict to log-only in production
+      name: 'My App Store',   // Name shown in Redux DevTools
+    }),
+  ],
+};
+```
+
+### Testing a signal store
+
+```typescript
+describe('OrderStore', () => {
+  let store: InstanceType<typeof OrderStore>;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        OrderStore,
+        { provide: OrderService, useValue: { getOrders: () => of(mockOrders) } },
+      ],
+    });
+    store = TestBed.inject(OrderStore);
+  });
+
+  it('should start with empty state', () => {
+    expect(store.orders()).toEqual([]);
+    expect(store.isLoading()).toBe(false);
+    expect(store.selectedId()).toBeNull();
+  });
+
+  it('should select an order', () => {
+    store.addOrder({ id: '1', status: 'active' } as Order);
+    store.selectOrder('1');
+    expect(store.selectedOrder()?.id).toBe('1');
+  });
+
+  it('should compute active orders', () => {
+    store.addOrder({ id: '1', status: 'active' } as Order);
+    store.addOrder({ id: '2', status: 'completed' } as Order);
+    expect(store.activeOrders().length).toBe(1);
+  });
+});
+```
+
+### When to use what
+
+| Scope | Solution | Example |
+|---|---|---|
+| Component-local | `signal()`, `computed()` | Form field state, toggle |
+| Parent ↔ child | `input()` / `output()` / `model()` | Prop drilling (1–2 levels) |
+| Feature-wide shared | NgRx Signal Store (feature-scoped) | Order list + detail + filters |
+| App-wide cross-cutting | NgRx Signal Store (`providedIn: 'root'`) | Auth, notifications, theme |
+| Server cache | `rxResource` / `httpResource` | Data that mirrors server state |
+
+## Testability Patterns
+
+Use `TestBed` for component tests, and direct instantiation for service unit tests.
+
+```typescript
+// ✅ Testable service — inject() based, no side effects in constructor
+@Injectable({ providedIn: 'root' })
+export class OrderService {
+  private http = inject(HttpClient);
+
+  getOrders(): Observable<Order[]> {
+    return this.http.get<Order[]>('/api/orders');
+  }
+
+  createOrder(request: CreateOrderRequest): Observable<Order> {
+    return this.http.post<Order>('/api/orders', request);
+  }
+}
+
+// ✅ Service test — HttpTestingController
+describe('OrderService', () => {
+  let service: OrderService;
+  let httpTesting: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+    service = TestBed.inject(OrderService);
+    httpTesting = TestBed.inject(HttpTestingController);
+  });
+
+  it('should fetch orders', () => {
+    const mockOrders: Order[] = [{ id: '1', status: 'pending' }];
+
+    service.getOrders().subscribe(orders => {
+      expect(orders).toEqual(mockOrders);
+    });
+
+    const req = httpTesting.expectOne('/api/orders');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockOrders);
+  });
+
+  afterEach(() => httpTesting.verify());
+});
+
+// ✅ Component test — signal inputs, minimal DOM
+describe('OrderRowComponent', () => {
+  it('should display order id', async () => {
+    await TestBed.configureTestingModule({
+      imports: [OrderRowComponent]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(OrderRowComponent);
+    fixture.componentRef.setInput('order', { id: 'ord-1', status: 'pending' });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('ord-1');
+  });
+});
+```
 
 ## Quality checklist
 

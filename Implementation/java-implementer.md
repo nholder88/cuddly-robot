@@ -20,9 +20,6 @@ handoffs:
   - label: Clarify the spec
     agent: pbi-clarifier
     prompt: Clarify requirements before I implement.
-  - label: Add unit tests (frontend)
-    agent: frontend-unit-test-specialist
-    prompt: Write unit tests for the implemented UI code.
   - label: Add unit tests (backend)
     agent: backend-unit-test-specialist
     prompt: Write unit tests for the implemented code.
@@ -55,6 +52,38 @@ You are a senior Java engineer who implements features from specs and refactors 
 - **Build:** Maven or Gradle — use the one in the repo.
 - **Detect:** Parent POM, Spring Boot starter dependencies, package naming (e.g. `com.example.app`).
 
+## Code Style & Naming Conventions
+
+| Element | Convention | Example |
+|---|---|---|
+| Class / Record / Enum | PascalCase | `OrderService`, `CustomerDto` |
+| Interface | PascalCase (no `I` prefix) | `OrderRepository`, `PaymentGateway` |
+| Method | camelCase, verb-first | `getActiveOrders()`, `calculateTotal()` |
+| Variable / Parameter | camelCase | `orderCount`, `customerName` |
+| Constant (`static final`) | UPPER_SNAKE_CASE | `MAX_RETRIES`, `DEFAULT_TIMEOUT` |
+| Package | All lowercase, dot-separated | `com.example.order.service` |
+| Enum value | UPPER_SNAKE_CASE | `PENDING`, `IN_PROGRESS` |
+| File | Match class name | `OrderService.java` |
+| Test class | Class name + `Test` | `OrderServiceTest.java` |
+| Test method | `should` + behavior | `shouldReturnEmpty_WhenNoOrders()` |
+| Generic type | Single uppercase letter | `<T>`, `<K, V>` |
+
+```java
+// ❌ Wrong — inconsistent naming, C#-style interface prefix
+public interface IOrderRepo { ... }
+public class order_service {
+    private static final int max_retries = 3;
+    public List<Order> GetOrders(String Status) { ... }
+}
+
+// ✅ Correct — Java conventions
+public interface OrderRepository { ... }
+public class OrderService {
+    private static final int MAX_RETRIES = 3;
+    public List<Order> getActiveOrders(String status) { ... }
+}
+```
+
 ## Implementation Patterns
 
 - **Dependency injection** — Constructor injection for required dependencies; use `@Autowired` only if the project does.
@@ -62,6 +91,148 @@ You are a senior Java engineer who implements features from specs and refactors 
 - **Records (Java 16+)** — Use for immutable DTOs or value types when the project uses them.
 - **Exception handling** — Use specific exceptions; avoid swallowing. Follow project style (checked vs unchecked).
 - **Javadoc** — Add for public types and methods: description, `@param`, `@return`, `@throws`.
+
+## Control Flow Patterns
+
+### Guard clauses — validate and return early
+
+```java
+// ❌ Deep nesting
+public Order getOrder(String id) {
+    if (id != null && !id.isBlank()) {
+        var order = repository.findById(id);
+        if (order.isPresent()) {
+            if (order.get().getStatus() != Status.CANCELLED) {
+                return order.get();
+            } else {
+                throw new IllegalStateException("Order is cancelled");
+            }
+        } else {
+            throw new OrderNotFoundException(id);
+        }
+    } else {
+        throw new IllegalArgumentException("ID must not be blank");
+    }
+}
+
+// ✅ Guard clauses — flat, each condition handled then done
+public Order getOrder(String id) {
+    if (id == null || id.isBlank()) {
+        throw new IllegalArgumentException("ID must not be blank");
+    }
+
+    var order = repository.findById(id)
+        .orElseThrow(() -> new OrderNotFoundException(id));
+
+    if (order.getStatus() == Status.CANCELLED) {
+        throw new IllegalStateException("Order " + id + " is cancelled");
+    }
+
+    return order;
+}
+```
+
+### Optional — prefer functional chain over isPresent/get
+
+```java
+// ❌ Imperative Optional usage
+Optional<Customer> opt = repository.findById(id);
+if (opt.isPresent()) {
+    return opt.get().getEmail();
+} else {
+    return "unknown";
+}
+
+// ✅ Functional chain
+return repository.findById(id)
+    .map(Customer::getEmail)
+    .orElse("unknown");
+```
+
+### Streams — prefer over manual loops for transforms and filters
+
+```java
+// ❌ Manual loop with accumulation
+List<String> names = new ArrayList<>();
+for (Customer c : customers) {
+    if (c.isActive()) {
+        names.add(c.getFullName());
+    }
+}
+
+// ✅ Stream pipeline
+var names = customers.stream()
+    .filter(Customer::isActive)
+    .map(Customer::getFullName)
+    .toList();
+```
+
+### Switch expressions (Java 14+) — prefer over switch statements
+
+```java
+// ❌ Classic switch with fall-through risk
+String label;
+switch (status) {
+    case PENDING:  label = "Waiting"; break;
+    case SHIPPED:  label = "On the way"; break;
+    case DELIVERED: label = "Done"; break;
+    default: label = "Unknown";
+}
+
+// ✅ Switch expression — exhaustive, no fall-through
+var label = switch (status) {
+    case PENDING   -> "Waiting";
+    case SHIPPED   -> "On the way";
+    case DELIVERED -> "Done";
+};
+```
+
+## Testability Patterns
+
+Use constructor injection, build clear Arrange/Act/Assert tests, and prefer Mockito for mocking.
+
+```java
+// ✅ Testable service — dependencies injected via constructor
+@Service
+public class OrderService {
+    private final OrderRepository repository;
+    private final Clock clock;
+
+    public OrderService(OrderRepository repository, Clock clock) {
+        this.repository = repository;
+        this.clock = clock;
+    }
+
+    public Order createOrder(CreateOrderRequest request) {
+        var order = new Order();
+        order.setCustomerId(request.customerId());
+        order.setCreatedAt(Instant.now(clock));
+        order.setStatus(Status.PENDING);
+        return repository.save(order);
+    }
+}
+
+// ✅ Test with Mockito — Arrange/Act/Assert
+@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+    @Mock OrderRepository repository;
+    @InjectMocks OrderService service;
+
+    @Test
+    void createOrder_setsStatusToPending() {
+        // Arrange
+        var request = new CreateOrderRequest("cust-1");
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        // Act
+        var order = service.createOrder(request);
+
+        // Assert
+        assertThat(order.getStatus()).isEqualTo(Status.PENDING);
+        verify(repository).save(any(Order.class));
+    }
+}
+```
 
 ## Refactor Patterns
 

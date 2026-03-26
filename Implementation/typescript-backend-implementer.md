@@ -76,6 +76,45 @@ Never log secrets, tokens, passwords, or raw PII payloads.
 5. Run build/lint/tests and fix regressions before reporting complete.
 6. If requirements are ambiguous, hand off to `pbi-clarifier`.
 
+## Code Style & Naming Conventions
+
+| Element | Convention | Example |
+|---|---|---|
+| Class | PascalCase | `OrderService`, `AuthGuard` |
+| Interface / Type | PascalCase | `CreateOrderDto`, `OrderResponse` |
+| NestJS Controller | PascalCase + `Controller` | `OrderController` |
+| NestJS Service | PascalCase + `Service` | `OrderService` |
+| NestJS Module | PascalCase + `Module` | `OrderModule` |
+| NestJS Guard | PascalCase + `Guard` | `JwtAuthGuard` |
+| NestJS Interceptor | PascalCase + `Interceptor` | `LoggingInterceptor` |
+| Function / Method | camelCase, verb-first | `getOrders()`, `validateInput()` |
+| Variable / Parameter | camelCase | `orderCount`, `isActive` |
+| Constant (module) | UPPER_SNAKE_CASE or camelCase | `MAX_RETRIES`, `defaultConfig` |
+| Enum | PascalCase (type + values) | `enum OrderStatus { Pending, Shipped }` |
+| File (NestJS) | kebab-case + type suffix | `order.service.ts`, `auth.guard.ts` |
+| File (Express/Fastify) | kebab-case | `order-router.ts`, `auth-middleware.ts` |
+| DTO | PascalCase + `Dto` | `CreateOrderDto`, `UpdateOrderDto` |
+| Test file | `.spec.ts` suffix | `order.service.spec.ts` |
+| Env variable | UPPER_SNAKE_CASE | `DATABASE_URL`, `JWT_SECRET` |
+
+```typescript
+// ❌ Wrong — no suffix, inconsistent naming, any type
+export class orders {
+  async get_orders(req: any): Promise<any> { ... }
+}
+
+// ✅ Correct — NestJS conventions
+@Controller('orders')
+export class OrderController {
+  constructor(private readonly orderService: OrderService) {}
+
+  @Get()
+  async getOrders(@Query() query: GetOrdersDto): Promise<OrderResponse[]> {
+    return this.orderService.findActive(query);
+  }
+}
+```
+
 ## Implementation Guidelines
 
 - Prefer typed contracts (interfaces/types) and avoid `any`.
@@ -83,6 +122,175 @@ Never log secrets, tokens, passwords, or raw PII payloads.
 - Respect current architecture and naming conventions.
 - Add/adjust tests for changed behavior and critical error paths.
 - Keep changes focused to requested scope.
+
+## Control Flow Patterns
+
+### Guard clauses — validate early, throw typed exceptions
+
+```typescript
+// ❌ Deep nesting
+async getOrder(id: string): Promise<Order> {
+  if (id) {
+    const order = await this.repo.findOne(id);
+    if (order) {
+      if (order.status !== OrderStatus.Deleted) {
+        return order;
+      } else {
+        throw new GoneException('Order has been deleted');
+      }
+    } else {
+      throw new NotFoundException(`Order ${id} not found`);
+    }
+  } else {
+    throw new BadRequestException('id is required');
+  }
+}
+
+// ✅ Guard clauses — flat, readable
+async getOrder(id: string): Promise<Order> {
+  if (!id) {
+    throw new BadRequestException('id is required');
+  }
+
+  const order = await this.repo.findOne(id);
+  if (!order) {
+    throw new NotFoundException(`Order ${id} not found`);
+  }
+
+  if (order.status === OrderStatus.Deleted) {
+    throw new GoneException('Order has been deleted');
+  }
+
+  return order;
+}
+```
+
+### Error handling — typed exceptions, structured logging, no swallowed errors
+
+```typescript
+// ❌ Generic error, swallowed context
+try {
+  await this.db.save(entity);
+} catch (e) {
+  console.log('error', e);
+  throw new Error('Something went wrong');
+}
+
+// ✅ Specific handling, structured logging, context preserved
+try {
+  await this.db.save(entity);
+} catch (error) {
+  if (error instanceof QueryFailedError && error.message.includes('duplicate')) {
+    throw new ConflictException(`Order ${entity.id} already exists`);
+  }
+  this.logger.error('Failed to save order', { orderId: entity.id, error });
+  throw new InternalServerErrorException('Failed to create order');
+}
+```
+
+### DTO validation — class-validator decorators, fail fast
+
+```typescript
+// ✅ DTO with validation — reusable, self-documenting
+export class CreateOrderDto {
+  @IsString()
+  @IsNotEmpty()
+  customerId: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  notes?: string;
+}
+```
+
+### Async patterns — no fire-and-forget, bounded retries
+
+```typescript
+// ❌ Fire-and-forget — error silently lost
+async createOrder(dto: CreateOrderDto): Promise<Order> {
+  const order = await this.repo.save(dto);
+  this.emailService.sendConfirmation(order); // no await, no catch
+  return order;
+}
+
+// ✅ Await or queue — errors visible
+async createOrder(dto: CreateOrderDto): Promise<Order> {
+  const order = await this.repo.save(dto);
+  try {
+    await this.emailService.sendConfirmation(order);
+  } catch (error) {
+    this.logger.warn('Confirmation email failed, queuing retry', {
+      orderId: order.id,
+      error,
+    });
+    await this.queue.add('email-retry', { orderId: order.id });
+  }
+  return order;
+}
+```
+
+## Testability Patterns
+
+Use constructor injection, isolated mocks, and Arrange/Act/Assert.
+
+```typescript
+// ✅ Testable service — all dependencies injected
+@Injectable()
+export class OrderService {
+  constructor(
+    private readonly repo: OrderRepository,
+    private readonly logger: PinoLogger,
+  ) {}
+
+  async findActive(): Promise<Order[]> {
+    return this.repo.find({ where: { status: OrderStatus.Active } });
+  }
+}
+
+// ✅ Test — isolated, Arrange/Act/Assert
+describe('OrderService', () => {
+  let service: OrderService;
+  let repo: jest.Mocked<OrderRepository>;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        OrderService,
+        {
+          provide: OrderRepository,
+          useValue: { find: jest.fn(), findOne: jest.fn(), save: jest.fn() },
+        },
+        { provide: PinoLogger, useValue: { info: jest.fn(), error: jest.fn() } },
+      ],
+    }).compile();
+
+    service = module.get(OrderService);
+    repo = module.get(OrderRepository);
+  });
+
+  it('should return only active orders', async () => {
+    // Arrange
+    const active = [{ id: '1', status: OrderStatus.Active }] as Order[];
+    repo.find.mockResolvedValue(active);
+
+    // Act
+    const result = await service.findActive();
+
+    // Assert
+    expect(result).toEqual(active);
+    expect(repo.find).toHaveBeenCalledWith({
+      where: { status: OrderStatus.Active },
+    });
+  });
+});
+```
 
 ## Output Contract
 
