@@ -1,9 +1,42 @@
 {
   "name": "ai-agent-workflows-tools",
-  "private": true,
   "version": "1.0.0",
-  "description": "Tooling for template parity validation",
+  "description": "VS Code and Cursor agent pack with templates, skills library, parity tooling, and a multi-IDE pack-install CLI.",
+  "keywords": [
+    "ai",
+    "agents",
+    "vscode",
+    "cursor",
+    "github-copilot",
+    "prompts",
+    "templates",
+    "skills",
+    "cli"
+  ],
+  "author": "Nigel <nholder88@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nholder88/ai-agent-workflows.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nholder88/ai-agent-workflows/issues"
+  },
+  "homepage": "https://github.com/nholder88/ai-agent-workflows#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "type": "module",
+  "bin": {
+    "ai-agent-pack-install": "./bin/pack-install.mjs"
+  },
+  "files": [
+    "agents",
+    "templates",
+    "skills",
+    "cli",
+    "bin"
+  ],
   "scripts": {
     "templates:validate-parity": "node --import tsx templates/tools/validate-parity.ts --root .",
     "templates:test-parity": "node --import tsx --test templates/tools/validate-parity.test.ts",

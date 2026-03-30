@@ -4,7 +4,7 @@ This repository contains a curated pack of custom AI agents, workflow docs, and 
 
 ## What this repo contains
 
-- `agents/`: 30 custom `*.agent.md` definitions (orchestrator, implementers, reviewers, testers, specialists)
+- `agents/`: 31 custom `*.agent.md` definitions (orchestrator, implementers, reviewers, testers, specialists)
 - `templates/`: 10 stack templates plus shared contracts/workflows and parity validator tooling
 - `skills/`: deduplicated skill library (when installed into a project, copied to `.github/skills/` so agents resolve `skills:` paths)
 - `Design/`, `Testing/`, `Documentation/`, `Database/`, `Deploy/`, `Strategy/`: companion design and domain docs
@@ -33,7 +33,29 @@ bash ./installer/mac/setup.sh
 
 Cross-platform installer with an **interactive wizard** (default) or scripted flags with `--yes`. Requires Node.js 20+ and `npm install` in this repo.
 
-**Interactive** (no `--yes`): run `npm run pack:install` and step through:
+### Install the CLI globally (any folder on your machine)
+
+From a clone of this repo you can link or install globally so the command `ai-agent-pack-install` is on your `PATH`. The published tarball includes `agents/`, `templates/`, `skills/`, and `cli/`; the default `--source` is that package root, so you can point **workspace** at any project.
+
+```bash
+# Option A: global install from a local path
+npm install -g /absolute/path/to/ai-agent-workflows
+
+# Option B: npm link from the repo (good for development)
+cd /path/to/ai-agent-workflows && npm link
+```
+
+Then, from anywhere:
+
+```bash
+ai-agent-pack-install --yes --targets vscode,cursor --workspace /path/to/any/project
+```
+
+That installs agents + templates into your VS Code/Cursor user prompt folders (machine-wide) and optionally copies **skills** and/or **templates** into the chosen project (`--workspace`). Use a different pack checkout with `--source /other/path/to/ai-agent-workflows` if needed.
+
+To publish: ensure the package name `ai-agent-workflows-tools` is available (or change `name` in [package.json](package.json)), run `npm login`, then `npm publish --access public`. A `LICENSE` file matching the `license` field is recommended before publishing.
+
+**Interactive** (no `--yes`): run `npm run pack:install` or `ai-agent-pack-install` and step through:
 
 1. Select editors (VS Code, Cursor, …) — all selected by default; CLI `--targets` pre-checks those ids when provided.
 2. Optionally copy **skills** and/or **Templates** into a project workspace (separate checkboxes).
@@ -227,7 +249,7 @@ Documentation scope is split intentionally:
 
 ### 2. Full pipeline (orchestrator)
 
-The **orchestrator** agent runs the full pipeline for a task: validate → plan → clarify → implement → test → document → review → fix. It delegates to specialist agents in sequence and enforces quality gates. For the full stage-by-stage flow, gates, and escalation rules, see **[agents/orchestrator.agent.md](agents/orchestrator.agent.md)**.
+The **orchestrator** agent runs the full pipeline for a task: validate → plan → clarify → implement → test → document → **review** → fix. Stage 7 runs **in parallel**: AppSec audit (`appsec-sentinel`) and code review (`code-review-sentinel`), then merges gates. It delegates to specialist agents in sequence (except Stage 7a/7b) and enforces quality gates. For the full stage-by-stage flow, gates, and escalation rules, see **[agents/orchestrator.agent.md](agents/orchestrator.agent.md)**.
 
 Pipeline timing note:
 
@@ -251,6 +273,7 @@ flowchart LR
     systemRev[system-reverse-engineer]
   end
   subgraph review [Review]
+    appsecSentinel[appsec-sentinel]
     codeReview[code-review-sentinel]
     assumptionRev[assumption-reviewer]
   end
@@ -280,6 +303,10 @@ flowchart LR
   architect -->|Review code| codeReview
   architect -->|Reverse engineer| systemRev
   architect -->|Containerize| docker
+
+  appsecSentinel -->|Plan security backlog| architect
+  appsecSentinel -->|Harden containers| docker
+  appsecSentinel -->|Re-verify after fixes| codeReview
 
   pbiClarifier -->|Consult architect| architect
   pbiClarifier -->|Review spec| codeReview
@@ -410,7 +437,7 @@ Reusable workflow templates resolve stack commands through slot names:
 
 ### Wiki Update Post-Task Flow
 
-The orchestrator includes a post-review hook for wiki updates after Stage 7 PASS.
+The orchestrator includes a post-review hook for wiki updates after merged Stage 7 PASS (7a AppSec and 7b code review, or documented skip).
 
 - Scope defaults: `github.com` plus GHES allowlist in `templates/shared/wiki-update-contract.yaml`
 - Trigger default: `stage7_pass`
