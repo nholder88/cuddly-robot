@@ -12,7 +12,7 @@ param(
     [Parameter()]
     [string]$CursorPromptsPath,
 
-    # When provided, the .github/skills/ library is also copied into this
+    # When provided, the repo skills/ library is also copied into this
     # workspace root at .github/skills/.  Agents reference skills with the path
     # .github/skills/<name>/SKILL.md, so skills must be present in the
     # workspace where they will be used.
@@ -98,7 +98,7 @@ function Copy-AgentsAndTemplates {
 
     Ensure-Directory -Path $TargetPromptsPath
 
-    $templatesTargetPath = Join-Path $TargetPromptsPath "Templates"
+    $templatesTargetPath = Join-Path $TargetPromptsPath "templates"
     Ensure-Directory -Path $templatesTargetPath
 
     $installedFiles = @()
@@ -110,7 +110,7 @@ function Copy-AgentsAndTemplates {
         $installedFiles += $targetFilePath
     }
 
-    # Install templates under prompts/Templates preserving folder structure.
+    # Install templates under prompts/templates preserving folder structure.
     Get-ChildItem -LiteralPath $TemplatesSource -File -Recurse | ForEach-Object {
         $trimChars = [char[]]([char]92, [char]47)
         $relativePath = $_.FullName.Substring($TemplatesSource.Length).TrimStart($trimChars)
@@ -179,9 +179,9 @@ try {
     }
 
     $repoRoot = Resolve-FullPath -Path $SourceRepoPath
-    $agentsSource = Join-Path $repoRoot "VS Code\agents"
-    $templatesSource = Join-Path $repoRoot "Templates"
-    $skillsSource = Join-Path $repoRoot ".github\skills"
+    $agentsSource = Join-Path $repoRoot "agents"
+    $templatesSource = Join-Path $repoRoot "templates"
+    $skillsSource = Join-Path $repoRoot "skills"
 
     if (-not (Test-Path -LiteralPath $agentsSource -PathType Container)) {
         Fail "Required source folder not found: $agentsSource"

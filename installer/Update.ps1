@@ -31,8 +31,8 @@ try {
     $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
     $setupScriptPath = Join-Path $scriptRoot "Setup.ps1"
     $defaultSourceRepoPath = Split-Path -Parent $scriptRoot
-    $defaultAgentsPath = Join-Path $defaultSourceRepoPath "VS Code\agents"
-    $defaultTemplatesPath = Join-Path $defaultSourceRepoPath "Templates"
+    $defaultAgentsPath = Join-Path $defaultSourceRepoPath "agents"
+    $defaultTemplatesPath = Join-Path $defaultSourceRepoPath "templates"
 
     if (-not (Test-Path -LiteralPath $setupScriptPath -PathType Leaf)) {
         Fail "Setup script not found next to Update script: $setupScriptPath"

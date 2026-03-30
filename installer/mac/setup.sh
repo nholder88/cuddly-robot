@@ -23,7 +23,7 @@ Usage: ./setup.sh [options]
 
 Options:
   --install-root <path>          Managed metadata root
-  --source-repo-path <path>      Source repo containing "VS Code/agents" and "Templates"
+  --source-repo-path <path>      Source repo containing "agents" and "templates"
   --vscode-prompts-path <path>   VS Code prompts target path
   --cursor-prompts-path <path>   Cursor prompts target path
   --skip-vscode                  Skip VS Code target
@@ -78,8 +78,8 @@ if [[ "$FORCE" -eq 1 ]]; then
 fi
 
 SOURCE_REPO_PATH="$(cd "$SOURCE_REPO_PATH" && pwd)"
-AGENTS_SOURCE="$SOURCE_REPO_PATH/VS Code/agents"
-TEMPLATES_SOURCE="$SOURCE_REPO_PATH/Templates"
+AGENTS_SOURCE="$SOURCE_REPO_PATH/agents"
+TEMPLATES_SOURCE="$SOURCE_REPO_PATH/templates"
 
 [[ -d "$AGENTS_SOURCE" ]] || fail "Required source folder not found: $AGENTS_SOURCE"
 [[ -d "$TEMPLATES_SOURCE" ]] || fail "Required source folder not found: $TEMPLATES_SOURCE"
@@ -108,7 +108,7 @@ copy_target() {
   local prompts_path="$2"
 
   mkdir -p "$prompts_path"
-  local templates_target_path="$prompts_path/Templates"
+  local templates_target_path="$prompts_path/templates"
   mkdir -p "$templates_target_path"
 
   local agent_count=0
@@ -173,13 +173,13 @@ if not skip_vscode:
     targets.append({
         'target': 'vscode',
         'promptsPath': vscode_prompts,
-        'templatesPath': f'{vscode_prompts}/Templates',
+        'templatesPath': f'{vscode_prompts}/templates',
     })
 if not skip_cursor:
     targets.append({
         'target': 'cursor',
         'promptsPath': cursor_prompts,
-        'templatesPath': f'{cursor_prompts}/Templates',
+        'templatesPath': f'{cursor_prompts}/templates',
     })
 
 manifest = {

@@ -6,7 +6,7 @@
 
 ### Actions Taken
 - Read architecture and backlog sources for WU-01 through WU-09.
-- Reviewed parity tooling and test patterns in `Templates/tools/validate-parity.ts` and `Templates/tools/validate-parity.test.ts`.
+- Reviewed parity tooling and test patterns in `templates/tools/validate-parity.ts` and `templates/tools/validate-parity.test.ts`.
 - Created consolidated Stage 3 implementation-ready spec with per-PBI functional AC, technical AC, test criteria, implementation steps, and out-of-scope sections.
 - Added backlog annotation linking Stage 2 backlog to Stage 3 implementation-ready spec.
 

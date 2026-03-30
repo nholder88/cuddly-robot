@@ -52,9 +52,9 @@ export function resolveRepoPaths(repoRoot: string): {
   templatesSourceDir: string;
   skillsSourceDir: string;
 } {
-  const agentsSourceDir = path.join(repoRoot, 'VS Code', 'agents');
-  const templatesSourceDir = path.join(repoRoot, 'Templates');
-  const skillsSourceDir = path.join(repoRoot, '.github', 'skills');
+  const agentsSourceDir = path.join(repoRoot, 'agents');
+  const templatesSourceDir = path.join(repoRoot, 'templates');
+  const skillsSourceDir = path.join(repoRoot, 'skills');
   return { agentsSourceDir, templatesSourceDir, skillsSourceDir };
 }
 
@@ -64,6 +64,6 @@ export function assertRepoLayout(repoRoot: string): void {
     throw new Error(`Missing agents folder: ${agentsSourceDir}`);
   }
   if (!fs.existsSync(templatesSourceDir) || !fs.statSync(templatesSourceDir).isDirectory()) {
-    throw new Error(`Missing Templates folder: ${templatesSourceDir}`);
+    throw new Error(`Missing templates folder: ${templatesSourceDir}`);
   }
 }

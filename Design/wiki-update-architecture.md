@@ -63,7 +63,7 @@ flowchart LR
 ### 2) Repository Host Policy Contract
 - Responsibility: Enforce SCM scope and allowlist behavior.
 - Interfaces: Shared YAML contract fields (`scope`, `ghesAllowlist`, `trigger`, `failureMode`, `outputMode`, `humanApproval`).
-- Dependencies: Shared contract files in `Templates/shared/`.
+- Dependencies: Shared contract files in `templates/shared/`.
 - Technology: YAML contract and parity validation.
 
 ### 3) Wiki Candidate Classifier
@@ -87,12 +87,12 @@ flowchart LR
 ### 6) Scaffold Contract Propagation
 - Responsibility: Ensure template specs consistently declare wiki update support defaults.
 - Interfaces: Template spec fields and shared contract references.
-- Dependencies: `Templates/shared/*` source-of-truth files.
+- Dependencies: `templates/shared/*` source-of-truth files.
 - Technology: YAML template specs across stacks.
 
 ### 7) Parity Validation and Governance
 - Responsibility: Detect drift between shared wiki contract, stack template specs, and validation rules.
-- Interfaces: `Templates/tools/validate-parity.ts` and tests.
+- Interfaces: `templates/tools/validate-parity.ts` and tests.
 - Dependencies: Capability matrix, stack catalog, and new wiki fields.
 - Technology: Node test runner (`node --test`) and parity tooling.
 
@@ -114,7 +114,7 @@ Trust boundaries:
 This feature uses file-based contracts.
 
 ### Contract A: Wiki Update Policy Contract
-- File: `Templates/shared/wiki-update-contract.yaml`
+- File: `templates/shared/wiki-update-contract.yaml`
 - Purpose: Define defaults and enforcement scope for wiki update behavior.
 
 Example:
@@ -139,20 +139,20 @@ classification:
 ```
 
 ### Contract B: Stack Wiki Scaffold Support
-- Files: `Templates/*/template-spec.yaml`
+- Files: `templates/*/template-spec.yaml`
 - Purpose: Declare that each stack scaffold supports wiki update metadata and shared contract linkage.
 
 Example:
 ```yaml
 wiki_update:
   enabled: true
-  contract_ref: Templates/shared/wiki-update-contract.yaml
+  contract_ref: templates/shared/wiki-update-contract.yaml
   output_mode_default: pr
   human_approval_default: true
 ```
 
 ### Contract C: Parity Validation Rules
-- Files: `Templates/shared/capability-parity-matrix.yaml` and validator logic.
+- Files: `templates/shared/capability-parity-matrix.yaml` and validator logic.
 - Purpose: Enforce required wiki update support fields for every stack key.
 
 ## Data Model
@@ -172,14 +172,14 @@ Relationships:
 ## Integration Points
 - Pipeline state and stage outcomes:
   - `agent-progress/pipeline-wiki-update-agent.md`
-  - `VS Code/agents/orchestrator.agent.md`
+  - `agents/orchestrator.agent.md`
 - Shared template source-of-truth:
-  - `Templates/shared/platform-contracts.yaml`
-  - `Templates/shared/capability-parity-matrix.yaml`
-  - `Templates/shared/stack-catalog.yaml`
+  - `templates/shared/platform-contracts.yaml`
+  - `templates/shared/capability-parity-matrix.yaml`
+  - `templates/shared/stack-catalog.yaml`
 - Validation tooling:
-  - `Templates/tools/validate-parity.ts`
-  - `Templates/tools/validate-parity.test.ts`
+  - `templates/tools/validate-parity.ts`
+  - `templates/tools/validate-parity.test.ts`
 
 ## Non-Functional Requirements
 - Performance:

@@ -10,7 +10,7 @@
 - Defined execution order to harden parity enforcement and prevent regressions.
 
 ### Files Created or Modified
-- `Review/code-review-remediation-plan.md` — Added full remediation backlog with priorities, dependencies, and validation requirements.
+- `agent-progress/code-review-remediation-plan.md` — Added full remediation backlog with priorities, dependencies, and validation requirements.
 - `agent-progress/code-review-remediation-plan.md` — Logged planning actions and outcome.
 
 ### Outcome
@@ -29,14 +29,14 @@ Implement Task 1 (parity evidence schema) and Task 2 (validator CLI), then wire 
 **Stage (if in pipeline):** Stage 2 — Architecture & Planning
 
 ### Actions Taken
-- Added root README documentation clarifying that `Templates/tools/validate-parity.ts` is repository tooling and how to run it.
-- Added review-agent guidance to run parity validation when `Templates/**` files are changed.
+- Added root README documentation clarifying that `templates/tools/validate-parity.ts` is repository tooling and how to run it.
+- Added review-agent guidance to run parity validation when `templates/**` files are changed.
 - Added orchestrator gate guidance requiring a passing parity validator run for template-scope changes.
 
 ### Files Created or Modified
 - `README.md` — Added `Template Parity Validator` section with purpose and commands.
-- `VS Code/agents/code-review-sentinel.agent.md` — Added template-aware parity validation checks in review process.
-- `VS Code/agents/orchestrator.agent.md` — Added parity validation gates for Stage 4 and Stage 7 when templates are modified.
+- `agents/code-review-sentinel.agent.md` — Added template-aware parity validation checks in review process.
+- `agents/orchestrator.agent.md` — Added parity validation gates for Stage 4 and Stage 7 when templates are modified.
 - `agent-progress/code-review-remediation-plan.md` — Appended this log entry.
 
 ### Outcome
@@ -46,7 +46,7 @@ Validator functionality is now explicitly documented at the repo root, and core 
 None
 
 ### Suggested Next Step
-Run `node Templates/tools/validate-parity.ts --root .` during template PR checks and proceed with CI workflow wiring.
+Run `node templates/tools/validate-parity.ts --root .` during template PR checks and proceed with CI workflow wiring.
 
 ## architect-planner — 2026-03-07T01:25:00Z
 
@@ -63,9 +63,9 @@ Run `node Templates/tools/validate-parity.ts --root .` during template PR checks
 ### Files Created or Modified
 - `package.json` — Added tooling scripts (`templates:test-parity`, `templates:validate-parity`) and dependencies.
 - `README.md` — Updated parity validator usage to npm workflow.
-- `Templates/tools/validate-parity.ts` — Hardened CLI entrypoint execution under `tsx`.
-- `Templates/tools/validate-parity.test.ts` — Fixed temp directory creation using `mkdtempSync`.
-- `Templates/shared/parity-evidence-schema.yaml` — Corrected schema `examples` keyword usage.
+- `templates/tools/validate-parity.ts` — Hardened CLI entrypoint execution under `tsx`.
+- `templates/tools/validate-parity.test.ts` — Fixed temp directory creation using `mkdtempSync`.
+- `templates/shared/parity-evidence-schema.yaml` — Corrected schema `examples` keyword usage.
 - `agent-progress/code-review-remediation-plan.md` — Appended this log entry.
 
 ### Outcome
@@ -93,9 +93,9 @@ Add CI workflow wiring (`.github/workflows/templates-parity.yml`) to enforce `np
 - `.gitignore` — Added `node_modules/` ignore rule.
 - `package.json` — Added parity tooling scripts and dependency declarations.
 - `README.md` — Documented npm-based parity commands.
-- `Templates/tools/validate-parity.ts` — Fixed entrypoint behavior and Ajv compile typing.
-- `Templates/tools/validate-parity.test.ts` — Fixed temp fixture directory creation.
-- `Templates/shared/parity-evidence-schema.yaml` — Corrected `examples` keyword structure.
+- `templates/tools/validate-parity.ts` — Fixed entrypoint behavior and Ajv compile typing.
+- `templates/tools/validate-parity.test.ts` — Fixed temp fixture directory creation.
+- `templates/shared/parity-evidence-schema.yaml` — Corrected `examples` keyword structure.
 - `agent-progress/code-review-remediation-plan.md` — Appended this log entry.
 
 ### Outcome

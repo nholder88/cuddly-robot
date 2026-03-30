@@ -4,9 +4,10 @@ This repository contains a curated pack of custom AI agents, workflow docs, and 
 
 ## What this repo contains
 
-- `VS Code/agents/`: 30 custom `*.agent.md` definitions (orchestrator, implementers, reviewers, testers, specialists)
-- `Templates/`: 10 stack templates plus shared contracts/workflows and parity validator tooling
-- `Implementation/`, `Design/`, `Review/`, `Testing/`, `Documentation/`, `Database/`, `Deploy/`, `Strategy/`: companion docs for each specialist domain
+- `agents/`: 30 custom `*.agent.md` definitions (orchestrator, implementers, reviewers, testers, specialists)
+- `templates/`: 10 stack templates plus shared contracts/workflows and parity validator tooling
+- `skills/`: deduplicated skill library (when installed into a project, copied to `.github/skills/` so agents resolve `skills:` paths)
+- `Design/`, `Testing/`, `Documentation/`, `Database/`, `Deploy/`, `Strategy/`: companion design and domain docs
 - `installer/`: Windows PowerShell installer/update/uninstall scripts, macOS shell equivalents, and optional MSI/PKG builders
 - `cli/`: Node/TypeScript **pack installer** (`npm run pack:install`) with a tool registry and pluggable adapters (see below)
 
@@ -51,8 +52,8 @@ npm run pack:install -- --dry-run --yes --targets vscode
 ```
 
 - **Registry**: [cli/tools.registry.json](cli/tools.registry.json) lists each tool (`id`, `label`, `adapterId`, per-OS `agentsRootByPlatform` with `{HOME}`, `{APPDATA}`, `{LOCALAPPDATA}` tokens).
-- **Adapters**: [cli/lib/adapters.ts](cli/lib/adapters.ts) maps `adapterId` → `vscode-agent` / `cursor-agent` (passthrough: flat agents + `Templates/**` under the tool root). Add a new tool row and adapter implementation for other assistants.
-- **Manifest**: writes `install-manifest.json` at the managed install root with `schemaVersion: 3`. Per-target `installedFiles` cover IDE paths only; optional `workspace` records skills and/or workspace `Templates/` when used. Windows [Uninstall.ps1](installer/Uninstall.ps1) and macOS [uninstall.sh](installer/mac/uninstall.sh) remove `workspace.installedFiles` when present.
+- **Adapters**: [cli/lib/adapters.ts](cli/lib/adapters.ts) maps `adapterId` → `vscode-agent` / `cursor-agent` (passthrough: flat agents + `templates/**` under the tool root). Add a new tool row and adapter implementation for other assistants.
+- **Manifest**: writes `install-manifest.json` at the managed install root with `schemaVersion: 3`. Per-target `installedFiles` cover IDE paths only; optional `workspace` records skills and/or workspace `templates/` when used. Windows [Uninstall.ps1](installer/Uninstall.ps1) and macOS [uninstall.sh](installer/mac/uninstall.sh) remove `workspace.installedFiles` when present.
 
 To install **skills** into a project (`.github/skills/`) or **Templates** next to that project, use the CLI; the macOS shell setup script does not copy skills.
 
@@ -75,8 +76,8 @@ Default payload target paths:
 
 What gets installed per target:
 
-- `VS Code/agents/*.agent.md` -> `<prompts-path>`
-- `Templates/**` -> `<prompts-path>/Templates/**`
+- `agents/*.agent.md` -> `<prompts-path>`
+- `templates/**` -> `<prompts-path>/templates/**`
 
 The installer writes `<install-root>/install-manifest.json` with source repo path, install root, package version, timestamp metadata, and a per-target file inventory for safe uninstall.
 
@@ -136,8 +137,8 @@ Default prompts target paths:
 
 What gets installed per target:
 
-- `VS Code/agents/*.agent.md` -> `<prompts-path>`
-- `Templates/**` -> `<prompts-path>/Templates/**`
+- `agents/*.agent.md` -> `<prompts-path>`
+- `templates/**` -> `<prompts-path>/templates/**`
 
 Usage:
 
@@ -190,8 +191,8 @@ macOS default targets:
 
 What gets copied:
 
-- `VS Code/agents/*.agent.md` -> target prompts/agents path
-- `Templates/**` -> `<target>/Templates/**`
+- `agents/*.agent.md` -> target prompts/agents path
+- `templates/**` -> `<target>/templates/**`
 
 Use these commands after pulling repo changes:
 
@@ -202,12 +203,12 @@ Use these commands after pulling repo changes:
 
 If you do not want to run installers, you can manually copy:
 
-- All files from `VS Code/agents/` into your desired agent/prompts folder
-- The `Templates/` directory into the same target root as `Templates/`
+- All files from `agents/` into your desired agent/prompts folder
+- The `templates/` tree into `<prompts-path>/templates/` (same layout as this repo)
 
 ### Workspace authoring
 
-When editing or creating agents in this repo, author files in `VS Code/agents/` and then run update to push changes to your installed location(s).
+When editing or creating agents in this repo, author files in `agents/` and then run update to push changes to your installed location(s).
 
 ---
 
@@ -226,7 +227,7 @@ Documentation scope is split intentionally:
 
 ### 2. Full pipeline (orchestrator)
 
-The **orchestrator** agent runs the full pipeline for a task: validate → plan → clarify → implement → test → document → review → fix. It delegates to specialist agents in sequence and enforces quality gates. For the full stage-by-stage flow, gates, and escalation rules, see **[Implementation/orchestrator.md](Implementation/orchestrator.md)**.
+The **orchestrator** agent runs the full pipeline for a task: validate → plan → clarify → implement → test → document → review → fix. It delegates to specialist agents in sequence and enforces quality gates. For the full stage-by-stage flow, gates, and escalation rules, see **[agents/orchestrator.agent.md](agents/orchestrator.agent.md)**.
 
 Pipeline timing note:
 
@@ -362,44 +363,44 @@ SQL, MongoDB, Redis, and GraphQL specialists follow the same pattern (→ code-r
 
 ## Template Projects Baseline
 
-If you want repeatable, consistent project starts, use the template system in `Templates/`:
+If you want repeatable, consistent project starts, use the template system in `templates/`:
 
-- `Templates/frontend-web/template-spec.yaml`
-- `Templates/frontend-nextjs/template-spec.yaml`
-- `Templates/frontend-sveltekit/template-spec.yaml`
-- `Templates/frontend-angular/template-spec.yaml`
-- `Templates/backend-service/template-spec.yaml`
-- `Templates/backend-dotnet/template-spec.yaml`
-- `Templates/backend-python/template-spec.yaml`
-- `Templates/backend-go/template-spec.yaml`
-- `Templates/backend-java/template-spec.yaml`
-- `Templates/backend-rust/template-spec.yaml`
-- `Templates/shared/platform-contracts.yaml`
-- `Templates/shared/capability-parity-matrix.yaml`
-- `Templates/shared/stack-catalog.yaml`
-- `Templates/shared/wiki-update-contract.yaml`
-- `Templates/shared/ci-command-contract.yaml`
-- `Templates/shared/ci-stack-command-matrix.yaml`
-- `Templates/shared/workflows/ci-pr.yaml`
-- `Templates/shared/workflows/ci-main.yaml`
-- `Templates/shared/workflows/cd-release.yaml`
-- `Templates/shared/workflows/cd-deploy.yaml`
-- `VS Code/agents/wiki-update-agent.agent.md`
-- `Templates/scaffold-prompt.md`
+- `templates/frontend-web/template-spec.yaml`
+- `templates/frontend-nextjs/template-spec.yaml`
+- `templates/frontend-sveltekit/template-spec.yaml`
+- `templates/frontend-angular/template-spec.yaml`
+- `templates/backend-service/template-spec.yaml`
+- `templates/backend-dotnet/template-spec.yaml`
+- `templates/backend-python/template-spec.yaml`
+- `templates/backend-go/template-spec.yaml`
+- `templates/backend-java/template-spec.yaml`
+- `templates/backend-rust/template-spec.yaml`
+- `templates/shared/platform-contracts.yaml`
+- `templates/shared/capability-parity-matrix.yaml`
+- `templates/shared/stack-catalog.yaml`
+- `templates/shared/wiki-update-contract.yaml`
+- `templates/shared/ci-command-contract.yaml`
+- `templates/shared/ci-stack-command-matrix.yaml`
+- `templates/shared/workflows/ci-pr.yaml`
+- `templates/shared/workflows/ci-main.yaml`
+- `templates/shared/workflows/cd-release.yaml`
+- `templates/shared/workflows/cd-deploy.yaml`
+- `agents/wiki-update-agent.agent.md`
+- `templates/scaffold-prompt.md`
 
 This provides a common baseline for env vars, security, logging, data mapping, feature flags, reporting hooks, and admin dashboard integration points so teams stop re-solving the same setup per project.
 
 ### Template Parity Validator
 
-The file `Templates/tools/validate-parity.ts` is repository tooling, not an application definition. It validates template governance across:
+The file `templates/tools/validate-parity.ts` is repository tooling, not an application definition. It validates template governance across:
 
-- Stack coverage between `Templates/shared/stack-catalog.yaml` and `Templates/shared/capability-parity-matrix.yaml`
+- Stack coverage between `templates/shared/stack-catalog.yaml` and `templates/shared/capability-parity-matrix.yaml`
 - Required capability coverage in each stack template spec
-- CI command contract completeness from `Templates/shared/ci-command-contract.yaml`
-- Stack command matrix coverage from `Templates/shared/ci-stack-command-matrix.yaml`
-- Required reusable workflow templates in `Templates/shared/workflows/`
+- CI command contract completeness from `templates/shared/ci-command-contract.yaml`
+- Stack command matrix coverage from `templates/shared/ci-stack-command-matrix.yaml`
+- Required reusable workflow templates in `templates/shared/workflows/`
 - Unit and E2E starter metadata presence/alignment in stack template specs
-- Parity evidence schema compliance (`Templates/shared/parity-evidence-schema.yaml`)
+- Parity evidence schema compliance (`templates/shared/parity-evidence-schema.yaml`)
 
 Reusable workflow templates resolve stack commands through slot names:
 
@@ -411,7 +412,7 @@ Reusable workflow templates resolve stack commands through slot names:
 
 The orchestrator includes a post-review hook for wiki updates after Stage 7 PASS.
 
-- Scope defaults: `github.com` plus GHES allowlist in `Templates/shared/wiki-update-contract.yaml`
+- Scope defaults: `github.com` plus GHES allowlist in `templates/shared/wiki-update-contract.yaml`
 - Trigger default: `stage7_pass`
 - Output mode default: `pr`
 - Approval default: `humanApproval: true`
@@ -432,4 +433,4 @@ npm run templates:test-parity
 npm run templates:validate-parity
 ```
 
-Use this check whenever `Templates/**` files change to prevent parity drift across framework and language variants.
+Use this check whenever `templates/**` files change to prevent parity drift across framework and language variants.

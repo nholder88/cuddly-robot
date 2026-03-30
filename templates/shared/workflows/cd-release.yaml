@@ -1,0 +1,21 @@
+version: 1.0.0
+name: cd-release-workflow-template
+purpose: Reusable release template that packages build output from canonical slots.
+
+inputs:
+  stack_key: "{{ stack_key }}"
+  working_directory: "{{ working_directory }}"
+  artifact_name: "{{ artifact_name }}"
+
+slot_tokens:
+  - package
+
+steps:
+  - name: Package artifact
+    slot: package
+  - name: Publish release artifact
+    run: "publish-artifact --name {{ artifact_name }} --path {{ working_directory }}/dist"
+
+execution:
+  command_source: templates/shared/ci-stack-command-matrix.yaml
+  command_reference_format: "{{ matrix.stacks[stack_key][slot] }}"

@@ -6,7 +6,7 @@
 
 ### Actions Taken
 - Reviewed Stage 2 source artifacts in `Design/ci-cd-testing-templates-architecture.md` and `Design/ci-cd-testing-templates-backlog.md`.
-- Reviewed repository governance and validator patterns in `README.md`, `Templates/README.md`, `Templates/tools/validate-parity.ts`, `Templates/tools/validate-parity.test.ts`, and `Templates/shared/stack-catalog.yaml`.
+- Reviewed repository governance and validator patterns in `README.md`, `templates/README.md`, `templates/tools/validate-parity.ts`, `templates/tools/validate-parity.test.ts`, and `templates/shared/stack-catalog.yaml`.
 - Authored Stage 3 implementation specification with assumptions, open questions, per-task functional AC, technical AC, test criteria, implementation steps, and out-of-scope boundaries.
 
 ### Files Created or Modified

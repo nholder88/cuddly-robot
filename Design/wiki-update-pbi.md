@@ -11,7 +11,7 @@ This feature adds a post-task wiki update flow that runs after Stage 7 PASS, app
 | A3 | Default output mode is `pr` and default approval is human-gated. | Confirmed | Required by context package and architecture defaults. |
 | A4 | Wiki content scope is end-user functional changes plus how-to guidance. | Confirmed | Required by context package and architecture classification include list. |
 | A5 | Low-level technical internals are excluded from generated wiki content. | Confirmed | Required by context package and architecture classification exclude list. |
-| A6 | GHES allowlist source is `Templates/shared/wiki-update-contract.yaml`. | Needs Clarification | Architecture implies this source; runtime loading path is implementation-dependent. |
+| A6 | GHES allowlist source is `templates/shared/wiki-update-contract.yaml`. | Needs Clarification | Architecture implies this source; runtime loading path is implementation-dependent. |
 | A7 | PR-mode output destination is a deterministic artifact format consumed by orchestrator. | Needs Clarification | Exact artifact path and naming convention are not defined in current docs. |
 | A8 | Duplicate Stage 7 retry handling uses idempotent wiki-flow execution keyed by task context. | Needs Clarification | Backlog requires no duplicate generation on retries; key strategy is not yet specified. |
 
@@ -26,15 +26,15 @@ Technical:
 3. Which location stores audit events in this repo context: stage progress markdown only, structured JSON artifact, or both?
 
 Scope:
-1. Is WU-09 limited to maintainer documentation in `README.md` and `Templates/README.md`, or does it include a dedicated runbook file under `Documentation/`?
+1. Is WU-09 limited to maintainer documentation in `README.md` and `templates/README.md`, or does it include a dedicated runbook file under `Documentation/`?
 2. Does GHES allowlist governance include approval workflow requirements, or only file-level change control guidance?
 
 ## 4. Functional Acceptance Criteria
 
 ### PBI-WU-01: Shared Wiki Update Policy Contract
 AC-1: Contract creation with approved defaults (happy path)
-  Given repository templates under `Templates/shared/`
-  When `Templates/shared/wiki-update-contract.yaml` is added
+  Given repository templates under `templates/shared/`
+  When `templates/shared/wiki-update-contract.yaml` is added
   Then the file parses as valid YAML
   And it contains `version`, `name`, `policy`, and `classification`
   And `policy` defaults are exactly `scope.githubDotCom: true`, `scope.ghesAllowlist: []`, `trigger: stage7_pass`, `failureMode: non_blocking_warning_audit`, `outputMode: pr`, `humanApproval: true`.
@@ -149,7 +149,7 @@ AC-3: Repeated transient failures across retries (edge case)
 
 ### PBI-WU-07: Stack Template Scaffold Support Fields
 AC-1: Stack-wide wiki_update section parity (happy path)
-  Given all stack `template-spec.yaml` files in `Templates/frontend-*` and `Templates/backend-*`
+  Given all stack `template-spec.yaml` files in `templates/frontend-*` and `templates/backend-*`
   When wiki scaffold fields are added
   Then each stack contains `wiki_update.enabled`, `wiki_update.contract_ref`, `wiki_update.output_mode_default`, and `wiki_update.human_approval_default`
   And each stack uses identical default values and contract path.
@@ -174,7 +174,7 @@ AC-1: Compliant wiki fields pass parity validation (happy path)
   And existing non-wiki parity checks remain passing.
 
 AC-2: Missing or malformed wiki contract file (error path)
-  Given `Templates/shared/wiki-update-contract.yaml` is missing or malformed
+  Given `templates/shared/wiki-update-contract.yaml` is missing or malformed
   When parity validation runs
   Then validation fails
   And output provides actionable remediation guidance.
@@ -189,7 +189,7 @@ AC-3: Partial stack updates and unknown stack keys (edge case)
 AC-1: Deterministic operator workflow documentation (happy path)
   Given wiki update feature defaults are implemented
   When docs are updated
-  Then `README.md` and `Templates/README.md` describe trigger timing, host scope, output mode, approval flow, and failure behavior
+  Then `README.md` and `templates/README.md` describe trigger timing, host scope, output mode, approval flow, and failure behavior
   And instructions include parity validation commands.
 
 AC-2: Broken doc references or commands (error path)
@@ -207,28 +207,28 @@ AC-3: Unsupported host troubleshooting path (edge case)
 ## 5. Technical Acceptance Criteria
 
 ### PBI-WU-01 Technical AC
-- Create `Templates/shared/wiki-update-contract.yaml`.
+- Create `templates/shared/wiki-update-contract.yaml`.
 - Use top-level keys `version`, `name`, `policy`, `classification`.
 - Include policy schema keys `scope.githubDotCom`, `scope.ghesAllowlist`, `trigger`, `failureMode`, `outputMode`, `humanApproval`.
 - Include classification lists with include values for user-visible functional change and end-user how-to, plus exclude values for internal refactor and low-level framework details.
 
 ### PBI-WU-02 Technical AC
-- Update `VS Code/agents/orchestrator.agent.md` with a post-Stage-7 branch that runs only on PASS.
+- Update `agents/orchestrator.agent.md` with a post-Stage-7 branch that runs only on PASS.
 - Update stage trace docs under `agent-progress/` that describe stage order and post-task behavior, including wiki-flow skip reasons.
 - Maintain existing stage sequencing and avoid changing pre-Stage-7 logic.
 
 ### PBI-WU-03 Technical AC
 - Implement host policy evaluation logic in orchestrator/wiki integration docs and associated runtime entry points referenced by orchestrator.
-- Use `Templates/shared/wiki-update-contract.yaml` as source of truth for host scope values.
+- Use `templates/shared/wiki-update-contract.yaml` as source of truth for host scope values.
 - Normalize host input for case, trailing dot, and optional port before policy comparison.
 
 ### PBI-WU-04 Technical AC
-- Extend wiki design/prompt assets in `Design/wiki-update-architecture.md` and agent spec artifacts under `VS Code/agents/` with deterministic rubric outputs.
+- Extend wiki design/prompt assets in `Design/wiki-update-architecture.md` and agent spec artifacts under `agents/` with deterministic rubric outputs.
 - Rubric output shape includes `eligible`, `reasonCode`, and `summaryHints`.
 - Define deterministic precedence rules for mixed-change inputs and document examples.
 
 ### PBI-WU-05 Technical AC
-- Add wiki update agent spec under `VS Code/agents/` and reference it from orchestrator stage flow docs.
+- Add wiki update agent spec under `agents/` and reference it from orchestrator stage flow docs.
 - Output payload includes required user-facing sections and output metadata fields for PR routing and approval gate.
 - Exclude low-level internals by explicit filtering guidance in agent instructions.
 
@@ -239,25 +239,25 @@ AC-3: Unsupported host troubleshooting path (edge case)
 
 ### PBI-WU-07 Technical AC
 - Modify these files:
-  - `Templates/frontend-nextjs/template-spec.yaml`
-  - `Templates/frontend-sveltekit/template-spec.yaml`
-  - `Templates/frontend-angular/template-spec.yaml`
-  - `Templates/backend-service/template-spec.yaml`
-  - `Templates/backend-dotnet/template-spec.yaml`
-  - `Templates/backend-python/template-spec.yaml`
-  - `Templates/backend-go/template-spec.yaml`
-  - `Templates/backend-java/template-spec.yaml`
-  - `Templates/backend-rust/template-spec.yaml`
+  - `templates/frontend-nextjs/template-spec.yaml`
+  - `templates/frontend-sveltekit/template-spec.yaml`
+  - `templates/frontend-angular/template-spec.yaml`
+  - `templates/backend-service/template-spec.yaml`
+  - `templates/backend-dotnet/template-spec.yaml`
+  - `templates/backend-python/template-spec.yaml`
+  - `templates/backend-go/template-spec.yaml`
+  - `templates/backend-java/template-spec.yaml`
+  - `templates/backend-rust/template-spec.yaml`
 - Add `wiki_update` object with `enabled`, `contract_ref`, `output_mode_default`, `human_approval_default`.
 - Keep `required_capabilities` and current stack metadata structure intact.
 
 ### PBI-WU-08 Technical AC
-- Extend `Templates/tools/validate-parity.ts` with wiki-update validation functions and actionable error messages.
-- Extend `Templates/tools/validate-parity.test.ts` with pass/fail coverage for missing contract, malformed contract, missing stack wiki fields, and default mismatch cases.
-- Update `Templates/shared/capability-parity-matrix.yaml` only if a new capability identifier is required for governance tracking.
+- Extend `templates/tools/validate-parity.ts` with wiki-update validation functions and actionable error messages.
+- Extend `templates/tools/validate-parity.test.ts` with pass/fail coverage for missing contract, malformed contract, missing stack wiki fields, and default mismatch cases.
+- Update `templates/shared/capability-parity-matrix.yaml` only if a new capability identifier is required for governance tracking.
 
 ### PBI-WU-09 Technical AC
-- Update `README.md` and `Templates/README.md` with operator workflow and governance guidance.
+- Update `README.md` and `templates/README.md` with operator workflow and governance guidance.
 - Add or update runbook docs if selected by resolution of Open Question Scope-1.
 - Ensure every documented command exists in `package.json` scripts, including `templates:test-parity` and `templates:validate-parity`.
 
@@ -265,7 +265,7 @@ AC-3: Unsupported host troubleshooting path (edge case)
 
 ### PBI-WU-01 Test Criteria
 Unit tests:
-- [ ] Validate YAML parse and required keys for `Templates/shared/wiki-update-contract.yaml`.
+- [ ] Validate YAML parse and required keys for `templates/shared/wiki-update-contract.yaml`.
 - [ ] Validate exact policy default values.
 
 Integration tests:
@@ -373,7 +373,7 @@ Edge case tests:
 
 ### PBI-WU-08 Test Criteria
 Unit tests:
-- [ ] Validator test: missing `Templates/shared/wiki-update-contract.yaml` fails.
+- [ ] Validator test: missing `templates/shared/wiki-update-contract.yaml` fails.
 - [ ] Validator test: malformed contract schema fails.
 - [ ] Validator test: missing `wiki_update` key in one stack fails.
 - [ ] Validator test: output mode and approval default mismatch fails.
@@ -404,22 +404,22 @@ Edge case tests:
 - [ ] Governance section covers GHES allowlist update control and parity re-validation.
 
 ## 7. Implementation Steps
-1. **Create shared policy contract (WU-01)** -- Add `Templates/shared/wiki-update-contract.yaml` with approved defaults and classification include/exclude taxonomy. Acceptance: YAML parses and parity load path resolves.
-2. **Add orchestrator post-task hook (WU-02)** -- Update `VS Code/agents/orchestrator.agent.md` with Stage 7 PASS gate and explicit skip/audit paths for non-PASS. Acceptance: orchestrator docs show one PASS-only entry point.
-3. **Implement host scope enforcement (WU-03)** -- Add host normalization and allowlist evaluation logic in orchestrator/wiki integration definitions referencing `Templates/shared/wiki-update-contract.yaml`. Acceptance: host policy cases map deterministically to proceed or skip.
+1. **Create shared policy contract (WU-01)** -- Add `templates/shared/wiki-update-contract.yaml` with approved defaults and classification include/exclude taxonomy. Acceptance: YAML parses and parity load path resolves.
+2. **Add orchestrator post-task hook (WU-02)** -- Update `agents/orchestrator.agent.md` with Stage 7 PASS gate and explicit skip/audit paths for non-PASS. Acceptance: orchestrator docs show one PASS-only entry point.
+3. **Implement host scope enforcement (WU-03)** -- Add host normalization and allowlist evaluation logic in orchestrator/wiki integration definitions referencing `templates/shared/wiki-update-contract.yaml`. Acceptance: host policy cases map deterministically to proceed or skip.
 4. **Define classifier rubric outputs (WU-04)** -- Add deterministic decision table and reason-code outputs in wiki design and agent assets. Acceptance: rubric supports include/exclude and mixed-change precedence.
-5. **Add wiki update agent and output contract (WU-05)** -- Create a wiki update agent file under `VS Code/agents/` and document output contract fields for PR routing and approval metadata. Acceptance: required user-facing sections and metadata are present.
+5. **Add wiki update agent and output contract (WU-05)** -- Create a wiki update agent file under `agents/` and document output contract fields for PR routing and approval metadata. Acceptance: required user-facing sections and metadata are present.
 6. **Wire non-blocking failures and audit trail (WU-06)** -- Define warning and structured audit behavior for all wiki failures without altering core pipeline status. Acceptance: failure path logs warnings plus audit payloads.
 7. **Propagate scaffold fields across stacks (WU-07)** -- Update nine stack `template-spec.yaml` files with consistent `wiki_update` defaults and contract reference. Acceptance: each stack spec includes identical wiki_update schema and values.
-8. **Extend parity validator and tests (WU-08)** -- Update `Templates/tools/validate-parity.ts` and `Templates/tools/validate-parity.test.ts` for wiki contract and stack wiki field coverage. Acceptance: parity commands pass on compliant fixtures and fail with actionable messages on drift.
-9. **Document operator workflow and governance (WU-09)** -- Update `README.md` and `Templates/README.md` with trigger, scope, failure, output, approval, and governance procedures plus validation commands. Acceptance: docs pass command/path verification and support deterministic maintainer workflow.
+8. **Extend parity validator and tests (WU-08)** -- Update `templates/tools/validate-parity.ts` and `templates/tools/validate-parity.test.ts` for wiki contract and stack wiki field coverage. Acceptance: parity commands pass on compliant fixtures and fail with actionable messages on drift.
+9. **Document operator workflow and governance (WU-09)** -- Update `README.md` and `templates/README.md` with trigger, scope, failure, output, approval, and governance procedures plus validation commands. Acceptance: docs pass command/path verification and support deterministic maintainer workflow.
 10. **Record Stage 3 traceability** -- Append Stage 3 completion evidence in `agent-progress/` with links to this spec and implementation artifacts. Acceptance: stage gate evidence references every WU PBI.
 
 ## 8. Out of Scope
 - Direct wiki publication API implementation to GitHub or GHES wiki endpoints.
 - Historical backfill of prior completed tasks into wiki artifacts.
-- Changes to non-wiki parity capabilities in `Templates/shared/capability-parity-matrix.yaml` outside required linkage updates.
-- Changes to template stack catalog composition in `Templates/shared/stack-catalog.yaml`.
+- Changes to non-wiki parity capabilities in `templates/shared/capability-parity-matrix.yaml` outside required linkage updates.
+- Changes to template stack catalog composition in `templates/shared/stack-catalog.yaml`.
 - Runtime feature additions outside Stage 7 post-task wiki flow.
 
 ## Stage 3 Gate Decision

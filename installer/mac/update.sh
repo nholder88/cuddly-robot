@@ -50,7 +50,7 @@ done
 
 [[ -f "$SETUP_SCRIPT" ]] || fail "Setup script not found next to update script: $SETUP_SCRIPT"
 
-if [[ -z "$SOURCE_REPO_PATH" ]] && [[ -d "$DEFAULT_SOURCE_REPO/VS Code/agents" ]] && [[ -d "$DEFAULT_SOURCE_REPO/Templates" ]]; then
+if [[ -z "$SOURCE_REPO_PATH" ]] && [[ -d "$DEFAULT_SOURCE_REPO/agents" ]] && [[ -d "$DEFAULT_SOURCE_REPO/templates" ]]; then
   SOURCE_REPO_PATH="$DEFAULT_SOURCE_REPO"
   log_info "Using local source repo next to installer scripts: $SOURCE_REPO_PATH"
 fi
