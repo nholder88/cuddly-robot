@@ -55,12 +55,12 @@ describe('getNodePlatform', () => {
 });
 
 describe('resolveRepoPaths', () => {
-  it('points at repo-root agents, templates, skills and lists 30 agent specs', () => {
+  it('points at repo-root agents, templates, skills and lists 31 agent specs', () => {
     const { agentsSourceDir, templatesSourceDir, skillsSourceDir } = resolveRepoPaths(repoRoot);
     assert.ok(fs.existsSync(agentsSourceDir));
     assert.ok(fs.existsSync(templatesSourceDir));
     assert.ok(fs.existsSync(skillsSourceDir));
     const agentFiles = fs.readdirSync(agentsSourceDir).filter((f) => f.endsWith('.agent.md'));
-    assert.equal(agentFiles.length, 30);
+    assert.equal(agentFiles.length, 31);
   });
 });

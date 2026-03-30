@@ -4,7 +4,7 @@ This repository contains a curated pack of custom AI agents, workflow docs, and 
 
 ## What this repo contains
 
-- `agents/`: 30 custom `*.agent.md` definitions (orchestrator, implementers, reviewers, testers, specialists)
+- `agents/`: 31 custom `*.agent.md` definitions (orchestrator, implementers, reviewers, testers, specialists)
 - `templates/`: 10 stack templates plus shared contracts/workflows and parity validator tooling
 - `skills/`: deduplicated skill library (when installed into a project, copied to `.github/skills/` so agents resolve `skills:` paths)
 - `Design/`, `Testing/`, `Documentation/`, `Database/`, `Deploy/`, `Strategy/`: companion design and domain docs
@@ -227,7 +227,7 @@ Documentation scope is split intentionally:
 
 ### 2. Full pipeline (orchestrator)
 
-The **orchestrator** agent runs the full pipeline for a task: validate → plan → clarify → implement → test → document → review → fix. It delegates to specialist agents in sequence and enforces quality gates. For the full stage-by-stage flow, gates, and escalation rules, see **[agents/orchestrator.agent.md](agents/orchestrator.agent.md)**.
+The **orchestrator** agent runs the full pipeline for a task: validate → plan → clarify → implement → test → document → **review** → fix. Stage 7 runs **in parallel**: AppSec audit (`appsec-sentinel`) and code review (`code-review-sentinel`), then merges gates. It delegates to specialist agents in sequence (except Stage 7a/7b) and enforces quality gates. For the full stage-by-stage flow, gates, and escalation rules, see **[agents/orchestrator.agent.md](agents/orchestrator.agent.md)**.
 
 Pipeline timing note:
 
@@ -251,6 +251,7 @@ flowchart LR
     systemRev[system-reverse-engineer]
   end
   subgraph review [Review]
+    appsecSentinel[appsec-sentinel]
     codeReview[code-review-sentinel]
     assumptionRev[assumption-reviewer]
   end
@@ -280,6 +281,10 @@ flowchart LR
   architect -->|Review code| codeReview
   architect -->|Reverse engineer| systemRev
   architect -->|Containerize| docker
+
+  appsecSentinel -->|Plan security backlog| architect
+  appsecSentinel -->|Harden containers| docker
+  appsecSentinel -->|Re-verify after fixes| codeReview
 
   pbiClarifier -->|Consult architect| architect
   pbiClarifier -->|Review spec| codeReview
@@ -410,7 +415,7 @@ Reusable workflow templates resolve stack commands through slot names:
 
 ### Wiki Update Post-Task Flow
 
-The orchestrator includes a post-review hook for wiki updates after Stage 7 PASS.
+The orchestrator includes a post-review hook for wiki updates after merged Stage 7 PASS (7a AppSec and 7b code review, or documented skip).
 
 - Scope defaults: `github.com` plus GHES allowlist in `templates/shared/wiki-update-contract.yaml`
 - Trigger default: `stage7_pass`

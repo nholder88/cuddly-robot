@@ -29,6 +29,9 @@ handoffs:
   - label: Review only
     agent: code-review-sentinel
     prompt: Run the review phase only on current code.
+  - label: Security review only
+    agent: appsec-sentinel
+    prompt: Run the AppSec audit only; write Review/security-audit-report.md with cited findings and remediation.
   - label: Reverse engineer first
     agent: system-reverse-engineer
     prompt: Reverse engineer the codebase before running the pipeline.
@@ -74,16 +77,21 @@ INPUT
 [STAGE 6] Documentation              ← skip for bug fixes and trivial tasks
                │
                ▼
-[STAGE 7] Code Review (Sentinel)
-               │
-          ┌────┴────┐
-       PASS         FAIL
-       │           │
-       ▼           ▼
-[STAGE 7.5] Wiki Update Post-Task Hook
+[STAGE 7a] AppSec Audit     [STAGE 7b] Code Review (Sentinel)   ← run in parallel
+(appsec-sentinel)            (code-review-sentinel)
+               │                        │
+               └────────────┬───────────┘
+                            ▼
+                    [Gate merge — Stage 7]
+                            │
+          ┌─────────────────┴─────────────────┐
+       PASS (7a+7b)                           FAIL
+       │                                       │
+       ▼                                       ▼
+[STAGE 7.5] Wiki Update Post-Task Hook    [FIX LOOP]  ← max 3 iterations, then escalate
        │
        ▼
-     [DONE]    [FIX LOOP]  ← max 3 iterations, then escalate
+     [DONE]
 ```
 
 ---
@@ -371,9 +379,29 @@ Run test agents based on what was implemented. These can be run in parallel if b
 
 ---
 
-### STAGE 7 — Code Review (Sentinel)
+### STAGE 7 — AppSec Audit & Code Review (parallel)
 
-**Run for all task types except `SPEC_ONLY`.**
+**Run for all task types except `SPEC_ONLY`.** Delegate **7a** and **7b** **in parallel** (same change set, branch/PR context, and conventions paths).
+
+#### STAGE 7a — AppSec Audit (Sentinel)
+
+**Invoke:** `appsec-sentinel`
+
+**Pass in:**
+
+- Files changed since the last review cycle (plus manifests and deployment files: Dockerfiles, compose, `vercel.json`, CI workflows as relevant)
+- Scope: commit range or PR description
+- CLAUDE.md or project conventions doc path
+- Instruction: "Produce `Review/security-audit-report.md` (or dated variant) in the target workspace. Cite all external CVE/advisory claims with URLs. Include remediation and verification steps."
+
+**Gate — PASS conditions (7a):**
+
+- No **Critical** severity findings remain in the AppSec report (aligned with must-fix security risk for production)
+- If the user documents an explicit **waiver** for a Critical item, Stage 7 may still proceed only with user acknowledgment recorded in the pipeline log
+
+**Skip 7a when:** Same cases as `SPEC_ONLY`, or the user explicitly requests code review without AppSec (record `SKIP` with reason in the pipeline log).
+
+#### STAGE 7b — Code Review (Sentinel)
 
 **Invoke:** `code-review-sentinel`
 
@@ -385,7 +413,7 @@ Run test agents based on what was implemented. These can be run in parallel if b
 - CLAUDE.md or project conventions doc path
 - Instruction: "Review against the four pillars: Completeness, Correctness, Conciseness, Readability. Score each 1-5."
 
-**Gate — PASS conditions (ALL must be true):**
+**Gate — PASS conditions (7b):**
 
 - No Critical Issues (`🔴`) remain
 - Completeness score ≥ 4
@@ -393,16 +421,25 @@ Run test agents based on what was implemented. These can be run in parallel if b
 - Overall score ≥ 4
 - If template artifacts changed, parity validator output is attached and passing (`node templates/tools/validate-parity.ts --root .`).
 
+#### Gate merge — Stage 7 overall
+
+**PASS** when **all** of the following hold:
+
+- **7a** `PASS` or **7a** `SKIP` (with documented reason)
+- **7b** `PASS`
+
+**FAIL** when **7b** fails, or when **7a** fails (Critical AppSec findings unresolved).
+
 **Gate — FIX LOOP (on failure):**
 
-1. Extract all Critical Issues and Recommendations from the review
-2. Pass them back to the appropriate implementer with the full review and instruction: "Address every Critical Issue. Address Recommendations unless there is a strong reason not to — document any you skip."
-3. Re-run Stage 7
+1. Extract Critical Issues from **7b** and Critical findings from **7a** (and Recommendations as policy dictates)
+2. Pass them to the appropriate implementer (`typescript-implementer`, `docker-architect`, etc.) with full context
+3. Re-run Stage 7 (7a and 7b in parallel again)
 4. Track iteration count in pipeline log
 
 **Max iterations:** 3 fix loops. If the gate still fails after 3 iterations, escalate to user with:
 
-- The current review output
+- The current AppSec report path and code-review output
 - A summary of what was attempted in each iteration
 - Specific questions about unresolved issues
 
@@ -410,9 +447,9 @@ Run test agents based on what was implemented. These can be run in parallel if b
 
 ### STAGE 7.5 — Wiki Update Post-Task Hook (conditional)
 
-**Run when:** Stage 7 result is `PASS`.
+**Run when:** Merged Stage 7 result is `PASS`.
 
-**Skip when:** Stage 7 result is `FAIL` or `INCOMPLETE`.
+**Skip when:** Merged Stage 7 result is `FAIL` or `INCOMPLETE`.
 
 **Policy source of truth:** `templates/shared/wiki-update-contract.yaml`
 
@@ -421,7 +458,7 @@ Run test agents based on what was implemented. These can be run in parallel if b
 **Required defaults:**
 
 - Scope: `github.com` + GHES allowlist only
-- Trigger: `stage7_pass`
+- Trigger: `stage7_pass` (merged 7a+7b gate)
 - Failure mode: `non_blocking_warning_audit`
 - Output mode default: `pr`
 - Human approval default: `true`
@@ -542,7 +579,8 @@ Example todo items (updated):
 [TODO]        STAGE 5a: Backend Tests
 [TODO]        STAGE 5b: Frontend Tests
 [TODO]        STAGE 6: Documentation
-[TODO]        STAGE 7: Code Review
+[TODO]        STAGE 7a: AppSec Audit — appsec-sentinel
+[TODO]        STAGE 7b: Code Review — code-review-sentinel
 [TODO]        STAGE 7.5: Wiki Update Post-Task Hook
 ```
 
