@@ -31,7 +31,6 @@
 - `templates/tools/validate-parity.ts` — Added wiki contract + stack wiki metadata validation functions and integration into run path.
 - `templates/tools/validate-parity.test.ts` — Added wiki validation tests and updated fixtures.
 - `agents/orchestrator.agent.md` — Added Stage 7.5 wiki post-task hook and non-blocking semantics.
-- `agents/orchestrator.agent.md` — Added Stage 7.5 wiki post-task hook and non-blocking semantics.
 - `README.md` — Added wiki flow defaults and governance notes.
 - `templates/README.md` — Added wiki workflow defaults and troubleshooting guidance.
 
