@@ -17,12 +17,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nholder88/cuddly-robot.git"
+    "url": "git+https://github.com/nholder88/ai-agent-workflows.git"
   },
   "bugs": {
-    "url": "https://github.com/nholder88/cuddly-robot/issues"
+    "url": "https://github.com/nholder88/ai-agent-workflows/issues"
   },
-  "homepage": "https://github.com/nholder88/cuddly-robot#readme",
+  "homepage": "https://github.com/nholder88/ai-agent-workflows#readme",
   "engines": {
     "node": ">=20.0.0"
   },
