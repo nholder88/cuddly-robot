@@ -8,11 +8,12 @@ This repository contains a curated pack of custom AI agents, workflow docs, and 
 - `Templates/`: 10 stack templates plus shared contracts/workflows and parity validator tooling
 - `Implementation/`, `Design/`, `Review/`, `Testing/`, `Documentation/`, `Database/`, `Deploy/`, `Strategy/`: companion docs for each specialist domain
 - `installer/`: Windows PowerShell installer/update/uninstall scripts, macOS shell equivalents, and optional MSI/PKG builders
+- `cli/`: Node/TypeScript **pack installer** (`npm run pack:install`) with a tool registry and pluggable adapters (see below)
 
 ## Quick start
 
 1. Clone this repo.
-2. Run the installer for your OS.
+2. Run the installer for your OS (PowerShell/shell scripts) **or** the Node CLI.
 3. Open VS Code or Cursor and use the installed agents/prompts.
 
 Windows:
@@ -26,6 +27,29 @@ macOS:
 ```bash
 bash ./installer/mac/setup.sh
 ```
+
+## CLI installer (Node)
+
+Cross-platform installer with interactive editor selection, optional workspace skills, and optional `Templates/` copy into a project. Requires Node.js 20+ and dependencies installed (`npm install` in this repo).
+
+```bash
+npm run pack:install
+```
+
+Non-interactive examples:
+
+```bash
+npm run pack:install -- --yes --targets vscode,cursor
+npm run pack:install -- --yes --targets vscode --workspace /path/to/project
+npm run pack:install -- --yes --targets cursor --workspace /path/to/project --workspace-templates
+npm run pack:install -- --dry-run --yes --targets vscode
+```
+
+- **Registry**: [cli/tools.registry.json](cli/tools.registry.json) lists each tool (`id`, `label`, `adapterId`, per-OS `agentsRootByPlatform` with `{HOME}`, `{APPDATA}`, `{LOCALAPPDATA}` tokens).
+- **Adapters**: [cli/lib/adapters.ts](cli/lib/adapters.ts) maps `adapterId` → `vscode-agent` / `cursor-agent` (passthrough: flat agents + `Templates/**` under the tool root). Add a new tool row and adapter implementation for other assistants.
+- **Manifest**: writes `install-manifest.json` at the managed install root with `schemaVersion: 3`. Per-target `installedFiles` cover IDE paths only; optional `workspace` records skills and/or workspace `Templates/` when used. Windows [Uninstall.ps1](installer/Uninstall.ps1) and macOS [uninstall.sh](installer/mac/uninstall.sh) remove `workspace.installedFiles` when present.
+
+To install **skills** into a project (`.github/skills/`) or **Templates** next to that project, use the CLI; the macOS shell setup script does not copy skills.
 
 ## Quick Windows Installer
 
@@ -42,7 +66,7 @@ Default managed install root (manifest + metadata):
 Default payload target paths:
 
 - VS Code: `%APPDATA%\Code\User\prompts`
-- Cursor: `%USERPROFILE%\.cursor\agents`
+- Cursor: `%APPDATA%\Cursor\User\prompts`
 
 What gets installed per target:
 
@@ -66,7 +90,7 @@ Optional flags:
 - `-InstallRoot "C:\some\custom\path"`
 - `-SourceRepoPath "D:\ai-agent-workflows"` (Setup/Update)
 - `-VSCodePromptsPath "C:\Users\<user>\AppData\Roaming\Code\User\prompts"` (Setup)
-- `-CursorPromptsPath "C:\Users\<user>\.cursor\agents"` (Setup)
+- `-CursorPromptsPath "C:\Users\<user>\AppData\Roaming\Cursor\User\prompts"` (Setup)
 - `-SkipVSCode` (Setup)
 - `-SkipCursor` (Setup)
 - `-RemoveInstallRoot` (Uninstall, remove empty root folder)
@@ -152,7 +176,7 @@ This repo ships install scripts that copy agents and templates into user-level p
 Windows default targets:
 
 - VS Code: `%APPDATA%\Code\User\prompts`
-- Cursor: `%USERPROFILE%\.cursor\agents`
+- Cursor: `%APPDATA%\Cursor\User\prompts`
 
 macOS default targets:
 

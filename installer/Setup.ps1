@@ -171,7 +171,7 @@ try {
         $VSCodePromptsPath = Join-Path $roamingAppData "Code\User\prompts"
     }
     if ([string]::IsNullOrWhiteSpace($CursorPromptsPath)) {
-        $CursorPromptsPath = Join-Path $userProfile ".cursor\agents"
+        $CursorPromptsPath = Join-Path $roamingAppData "Cursor\User\prompts"
     }
 
     if ([string]::IsNullOrWhiteSpace($SourceRepoPath)) {

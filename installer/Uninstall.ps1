@@ -132,6 +132,24 @@ try {
 
             Write-Info "Target [$($target.target)] removed files: $removedFiles"
         }
+
+        $workspacePayload = $manifest.workspace
+        if ($null -ne $workspacePayload) {
+            $wsRoot = $workspacePayload.root
+            $wsFiles = @($workspacePayload.installedFiles)
+            if ($wsFiles.Count -gt 0) {
+                $removedWs = 0
+                foreach ($installedFile in $wsFiles) {
+                    if (Remove-FileIfPresent -Path $installedFile) {
+                        $removedWs += 1
+                        if (-not [string]::IsNullOrWhiteSpace($wsRoot)) {
+                            Remove-EmptyParentDirectories -StartPath $installedFile -StopPath $wsRoot
+                        }
+                    }
+                }
+                Write-Info "Workspace removed files: $removedWs"
+            }
+        }
     }
 
     $managedFiles = @("install-manifest.json", ".managed-by-ai-agent-workflows")

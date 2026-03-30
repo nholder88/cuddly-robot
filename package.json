@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "templates:validate-parity": "node --import tsx Templates/tools/validate-parity.ts --root .",
-    "templates:test-parity": "node --import tsx --test Templates/tools/validate-parity.test.ts"
+    "templates:test-parity": "node --import tsx --test Templates/tools/validate-parity.test.ts",
+    "pack:install": "node --import tsx cli/pack-install.ts",
+    "pack:test": "node --import tsx --test cli/lib/*.test.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
@@ -14,6 +16,7 @@
     "typescript": "^5.9.0"
   },
   "dependencies": {
+    "@inquirer/prompts": "^8.3.2",
     "ajv": "^8.17.1",
     "yaml": "^2.8.1"
   }

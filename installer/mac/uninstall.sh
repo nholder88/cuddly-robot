@@ -90,6 +90,35 @@ PY
       rmdir "$d" || true
     fi
   done
+
+  python3 - "$MANIFEST_PATH" <<'PY'
+import json, os, sys
+
+path = sys.argv[1]
+try:
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+except (OSError, json.JSONDecodeError):
+    data = {}
+
+def remove_files(paths):
+    for fp in paths:
+        if not isinstance(fp, str):
+            continue
+        if os.path.isfile(fp):
+            try:
+                os.remove(fp)
+            except OSError:
+                pass
+
+paths = []
+for t in data.get("targets", []) or []:
+    paths.extend(t.get("installedFiles") or [])
+ws = data.get("workspace") or {}
+paths.extend(ws.get("installedFiles") or [])
+paths.extend(data.get("installedFiles") or [])
+remove_files(paths)
+PY
 fi
 
 rm -f "$FILES_PATH" "$MANIFEST_PATH" "$MARKER_PATH"
