@@ -67,7 +67,7 @@ For each changed file or logical unit of change, evaluate against these four cri
 - Are APIs and library functions used correctly (correct argument order, return value handling)?
 - Are async/await patterns, error propagation, and resource cleanup handled properly?
 - Does the code match the project's existing patterns and conventions found in documentation?
-- Are there security concerns (SQL injection, XSS, unvalidated input, exposed secrets)?
+- Are there security concerns (SQL injection, XSS, unvalidated input, exposed secrets)? For a deep AppSec audit, supply-chain, deployment, and cited CVE research, use `appsec-sentinel` in parallel (see orchestrator Stage 7).
 - Are imports correct and necessary?
 
 #### 3. Conciseness
