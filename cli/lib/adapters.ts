@@ -41,7 +41,7 @@ function listFilesRecursive(root: string): string[] {
 }
 
 /**
- * Passthrough: agents copied flat by basename; templates under Templates/<rel>.
+ * Passthrough: agents copied flat by basename; templates under templates/<rel>.
  */
 export function createPassthroughAdapter(id: string): PackAdapter {
   return {
@@ -61,7 +61,7 @@ export function createPassthroughAdapter(id: string): PackAdapter {
         const rel = path.relative(base, abs);
         return {
           kind: 'copy' as const,
-          targetSubpath: path.join('Templates', rel),
+          targetSubpath: path.join('templates', rel),
           sourceAbsolute: abs,
         };
       });

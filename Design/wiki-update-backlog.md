@@ -15,12 +15,12 @@ Implementation-ready Stage 3 refinement: `Design/wiki-update-pbi.md`.
 Create a shared YAML policy contract for wiki update scope, trigger, failure handling, and output defaults.
 
 ### Requirements
-- [ ] Create `Templates/shared/wiki-update-contract.yaml`.
+- [ ] Create `templates/shared/wiki-update-contract.yaml`.
 - [ ] Encode defaults: `scope` (`github.com` + GHES allowlist), `trigger: stage7_pass`, `failureMode: non_blocking_warning_audit`, `outputMode: pr`, `humanApproval: true`.
 - [ ] Add classification include/exclude taxonomy for user-facing content.
 
 ### Technical Specification
-- File to create: `Templates/shared/wiki-update-contract.yaml`.
+- File to create: `templates/shared/wiki-update-contract.yaml`.
 - Required top-level keys: `version`, `name`, `policy`, `classification`.
 - `policy.scope` must include `githubDotCom` boolean and `ghesAllowlist` array.
 - Classification schema must separate `include` and `exclude` criteria.
@@ -62,7 +62,7 @@ Add orchestrator logic to invoke wiki update flow after Stage 7 PASS only, with 
 
 ### Technical Specification
 - Modify orchestration definitions and stage flow references:
-  - `VS Code/agents/orchestrator.agent.md`
+  - `agents/orchestrator.agent.md`
   - Pipeline stage docs under `agent-progress/` where required.
 - Add explicit branch: if Stage 7 PASS then evaluate wiki flow, else skip.
 - Include stage label and audit hook references for non-blocking failure path.
@@ -105,7 +105,7 @@ Enforce repository host checks so wiki updates run only on `github.com` and allo
 
 ### Technical Specification
 - Add policy evaluation logic in orchestrator/runtime integration points.
-- Reference `Templates/shared/wiki-update-contract.yaml` as source of truth.
+- Reference `templates/shared/wiki-update-contract.yaml` as source of truth.
 - Create deterministic host matching behavior:
   - `github.com` always allowed when `githubDotCom: true`.
   - GHES host must match `ghesAllowlist`.
@@ -191,7 +191,7 @@ Create the dedicated wiki update agent instructions and output schema for user-f
 - [ ] Enforce `humanApproval: true` flow metadata.
 
 ### Technical Specification
-- Add new agent spec file in `VS Code/agents/` (name finalized during implementation).
+- Add new agent spec file in `agents/` (name finalized during implementation).
 - Define required output sections:
   - `What changed for users`
   - `How to use`
@@ -276,15 +276,15 @@ Add consistent wiki-update scaffold fields to all stack template specs so genera
 
 ### Technical Specification
 - Modify files:
-  - `Templates/frontend-nextjs/template-spec.yaml`
-  - `Templates/frontend-sveltekit/template-spec.yaml`
-  - `Templates/frontend-angular/template-spec.yaml`
-  - `Templates/backend-service/template-spec.yaml`
-  - `Templates/backend-dotnet/template-spec.yaml`
-  - `Templates/backend-python/template-spec.yaml`
-  - `Templates/backend-go/template-spec.yaml`
-  - `Templates/backend-java/template-spec.yaml`
-  - `Templates/backend-rust/template-spec.yaml`
+  - `templates/frontend-nextjs/template-spec.yaml`
+  - `templates/frontend-sveltekit/template-spec.yaml`
+  - `templates/frontend-angular/template-spec.yaml`
+  - `templates/backend-service/template-spec.yaml`
+  - `templates/backend-dotnet/template-spec.yaml`
+  - `templates/backend-python/template-spec.yaml`
+  - `templates/backend-go/template-spec.yaml`
+  - `templates/backend-java/template-spec.yaml`
+  - `templates/backend-rust/template-spec.yaml`
 - Add keys under stack spec metadata:
   - `wiki_update.enabled`
   - `wiki_update.contract_ref`
@@ -322,16 +322,16 @@ Add consistent wiki-update scaffold fields to all stack template specs so genera
 Extend parity tooling to enforce wiki update contract presence, field completeness, and stack-wide consistency.
 
 ### Requirements
-- [ ] Validate existence and schema shape of `Templates/shared/wiki-update-contract.yaml`.
+- [ ] Validate existence and schema shape of `templates/shared/wiki-update-contract.yaml`.
 - [ ] Validate every stack spec has required `wiki_update` keys.
 - [ ] Validate defaults and contract references are identical across stacks where required.
 - [ ] Add regression tests in Node built-in test runner.
 
 ### Technical Specification
 - Modify:
-  - `Templates/tools/validate-parity.ts`
-  - `Templates/tools/validate-parity.test.ts`
-  - `Templates/shared/capability-parity-matrix.yaml` (if new capability ID is introduced)
+  - `templates/tools/validate-parity.ts`
+  - `templates/tools/validate-parity.test.ts`
+  - `templates/shared/capability-parity-matrix.yaml` (if new capability ID is introduced)
 - Add wiki-specific validation functions and actionable error messages.
 - Keep existing parity behavior unchanged for unrelated capabilities.
 
@@ -374,7 +374,7 @@ Document how maintainers review, approve, and monitor wiki update artifacts and 
 ### Technical Specification
 - Modify docs in:
   - `README.md`
-  - `Templates/README.md`
+  - `templates/README.md`
   - Any wiki-update-specific runbook added during implementation.
 - Add quick-start section and troubleshooting section.
 - Cross-reference parity validation commands.

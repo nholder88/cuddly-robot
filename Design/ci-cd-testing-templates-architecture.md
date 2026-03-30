@@ -23,26 +23,26 @@ Out of scope:
   - Backend E2E is satisfied by API smoke/integration tests.
   - Shared command contract with per-stack mappings is required.
 - Existing governance controls remain active:
-  - `Templates/shared/capability-parity-matrix.yaml`
-  - `Templates/tools/validate-parity.ts`
+  - `templates/shared/capability-parity-matrix.yaml`
+  - `templates/tools/validate-parity.ts`
 - Existing unstaged edits in parity files must be preserved.
 
 ## Architecture Diagram
 ```mermaid
 flowchart LR
-  A[Template Author Updates Templates] --> B[Shared Command Contract\nTemplates/shared/ci-command-contract.yaml]
-  B --> C[Stack Command Mappings\nTemplates/shared/ci-stack-command-matrix.yaml]
-  B --> D[Reusable CI Workflows\nTemplates/shared/workflows/*.yaml]
+  A[Template Author Updates Templates] --> B[Shared Command Contract\ntemplates/shared/ci-command-contract.yaml]
+  B --> C[Stack Command Mappings\ntemplates/shared/ci-stack-command-matrix.yaml]
+  B --> D[Reusable CI Workflows\ntemplates/shared/workflows/*.yaml]
   C --> D
 
-  D --> E[Stack Template Specs\nTemplates/frontend-*/template-spec.yaml\nTemplates/backend-*/template-spec.yaml]
+  D --> E[Stack Template Specs\ntemplates/frontend-*/template-spec.yaml\ntemplates/backend-*/template-spec.yaml]
   E --> F[Generated Project Repo]
 
   F --> G[CI Run\ninstall lint build unit e2e]
   F --> H[CD Run\nartifact + deploy template]
 
   I[Testing Templates\nunit + e2e smoke/integration] --> E
-  J[Parity Validator\nTemplates/tools/validate-parity.ts] --> K[Governance Gate]
+  J[Parity Validator\ntemplates/tools/validate-parity.ts] --> K[Governance Gate]
   C --> J
   D --> J
   I --> J
@@ -55,25 +55,25 @@ flowchart LR
 - Responsibility: Define canonical CI/CD lifecycle command slots (`install`, `lint`, `build`, `unit_test`, `e2e_test`, `package`, `deploy`) that all stacks map to.
 - Interfaces: YAML schema-like contract consumed by reusable workflows and stack mapping.
 - Dependencies: Stack catalog for stack keys.
-- Technology: YAML in `Templates/shared/`.
+- Technology: YAML in `templates/shared/`.
 
 ### 2) Stack Command Mapping Matrix
 - Responsibility: Map each stack key (nextjs, sveltekit, angular, node_nestjs, dotnet, python, go, java, rust) to concrete commands for each contract slot.
 - Interfaces: Referenced by workflow templates at generation time.
 - Dependencies: Shared command contract, stack catalog.
-- Technology: YAML matrix file in `Templates/shared/`.
+- Technology: YAML matrix file in `templates/shared/`.
 
 ### 3) Reusable Workflow Templates (CI)
 - Responsibility: Provide generic workflow templates for pull request and main-branch validation using contract slots.
 - Interfaces: Inputs are stack key, command matrix, and project metadata.
 - Dependencies: Shared command contract, mapping matrix.
-- Technology: YAML templates under `Templates/shared/workflows/`.
+- Technology: YAML templates under `templates/shared/workflows/`.
 
 ### 4) Reusable Workflow Templates (CD + Deployment)
 - Responsibility: Provide release/deploy workflow templates with environment placeholders and promotion gates.
 - Interfaces: Inputs include deployment target profile and package artifact metadata.
 - Dependencies: CI outputs and command contract `package`/`deploy` slots.
-- Technology: YAML templates under `Templates/shared/workflows/`.
+- Technology: YAML templates under `templates/shared/workflows/`.
 
 ### 5) Unit-Test Templates
 - Responsibility: Ensure every generated project includes a starter unit test and runner configuration path.
@@ -90,17 +90,17 @@ flowchart LR
 
 ### 7) Governance and Validation
 - Responsibility: Detect drift, missing mappings, and missing test/deployment capabilities before template changes are accepted.
-- Interfaces: `node --test Templates/tools/validate-parity.test.ts` and parity validator CLI.
+- Interfaces: `node --test templates/tools/validate-parity.test.ts` and parity validator CLI.
 - Dependencies: Existing parity files plus new CI/CD matrix and workflow references.
 
 ### 8) Documentation and Adoption
 - Responsibility: Make the workflow and command contract discoverable in repo-level docs.
-- Interfaces: `README.md` and `Templates/README.md` updates.
+- Interfaces: `README.md` and `templates/README.md` updates.
 - Dependencies: Finalized contract and file layout.
 
 ## Deployment Topology
 Because this feature ships repository templates (not runtime services), deployment topology is represented as control planes:
-- Authoring plane: Contributors edit `Templates/**` and docs.
+- Authoring plane: Contributors edit `templates/**` and docs.
 - Validation plane: Local/CI runs `npm run templates:test-parity` and `npm run templates:validate-parity`.
 - Consumption plane: Scaffold/generation process copies selected workflow/testing templates into generated projects.
 - Runtime plane: Generated project CI/CD system executes stack-native commands and deployment placeholders.
@@ -114,7 +114,7 @@ Network/trust boundaries:
 This feature uses file-based contracts rather than HTTP APIs.
 
 ### Contract A: CI Command Slot Definition
-- File: `Templates/shared/ci-command-contract.yaml`
+- File: `templates/shared/ci-command-contract.yaml`
 - Purpose: Canonical slot names and required/optional semantics.
 
 Example:
@@ -132,7 +132,7 @@ slots:
 ```
 
 ### Contract B: Per-Stack Command Mapping
-- File: `Templates/shared/ci-stack-command-matrix.yaml`
+- File: `templates/shared/ci-stack-command-matrix.yaml`
 - Purpose: Concrete commands per stack key and slot.
 
 Example:
@@ -150,7 +150,7 @@ stacks:
 ```
 
 ### Contract C: Reusable Workflow Interface
-- Files: `Templates/shared/workflows/ci.yaml`, `Templates/shared/workflows/cd.yaml`
+- Files: `templates/shared/workflows/ci.yaml`, `templates/shared/workflows/cd.yaml`
 - Purpose: Document required inputs and outputs for workflow generation.
 
 Example inputs:
@@ -178,19 +178,19 @@ Relationships:
 
 ## Integration Points
 - Existing template specs:
-  - `Templates/frontend-nextjs/template-spec.yaml`
-  - `Templates/frontend-sveltekit/template-spec.yaml`
-  - `Templates/frontend-angular/template-spec.yaml`
-  - `Templates/backend-service/template-spec.yaml`
-  - `Templates/backend-dotnet/template-spec.yaml`
-  - `Templates/backend-python/template-spec.yaml`
-  - `Templates/backend-go/template-spec.yaml`
-  - `Templates/backend-java/template-spec.yaml`
-  - `Templates/backend-rust/template-spec.yaml`
+  - `templates/frontend-nextjs/template-spec.yaml`
+  - `templates/frontend-sveltekit/template-spec.yaml`
+  - `templates/frontend-angular/template-spec.yaml`
+  - `templates/backend-service/template-spec.yaml`
+  - `templates/backend-dotnet/template-spec.yaml`
+  - `templates/backend-python/template-spec.yaml`
+  - `templates/backend-go/template-spec.yaml`
+  - `templates/backend-java/template-spec.yaml`
+  - `templates/backend-rust/template-spec.yaml`
 - Existing governance artifacts:
-  - `Templates/shared/capability-parity-matrix.yaml`
-  - `Templates/shared/stack-catalog.yaml`
-  - `Templates/tools/validate-parity.ts`
+  - `templates/shared/capability-parity-matrix.yaml`
+  - `templates/shared/stack-catalog.yaml`
+  - `templates/tools/validate-parity.ts`
 
 ## Non-Functional Requirements
 - Performance:

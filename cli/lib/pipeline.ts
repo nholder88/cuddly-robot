@@ -11,7 +11,7 @@ export interface RunInstallOptions {
   toolIds: string[];
   registry: ToolRegistryFile;
   workspaceRoot: string | null;
-  /** When workspace is set, copy `.github/skills` (default true). */
+  /** When workspace is set, copy repo `skills/` into workspace `.github/skills` (default true). */
   workspaceSkills: boolean;
   workspaceTemplates: boolean;
   dryRun: boolean;
@@ -93,7 +93,7 @@ async function emitForTool(
     installedFiles.push(await writeArtifact(agentsRoot, a, dryRun));
   }
 
-  const templatesPath = path.join(agentsRoot, 'Templates');
+  const templatesPath = path.join(agentsRoot, 'templates');
   const target: ManifestTarget = {
     target: tool.id,
     promptsPath: path.normalize(agentsRoot),
@@ -157,14 +157,14 @@ async function emitWorkspaceTemplates(
     const rel = path.relative(base, abs);
     const artifact: InstallArtifact = {
       kind: 'copy',
-      targetSubpath: path.join('Templates', rel),
+      targetSubpath: path.join('templates', rel),
       sourceAbsolute: abs,
     };
     paths.push(await writeArtifact(workspaceRoot, artifact, dryRun));
   }
   return {
     paths,
-    templatesPath: path.normalize(path.join(workspaceRoot, 'Templates')),
+    templatesPath: path.normalize(path.join(workspaceRoot, 'templates')),
     count: files.length,
   };
 }

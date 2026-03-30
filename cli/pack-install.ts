@@ -83,8 +83,8 @@ function parseArgs(argv: string[]): ParsedArgs {
 function printHelp(): void {
   console.log(`Usage: node --import tsx cli/pack-install.ts [options]
 
-Install agents + Templates into selected IDE prompt folders; optionally copy
-skills and Templates into a project workspace.
+Install agents + templates into selected IDE prompt folders; optionally copy
+skills and templates into a project workspace.
 
 Run without --yes for an interactive wizard (select editors, workspace options,
 dry-run, confirm).
@@ -93,7 +93,7 @@ Options:
   --targets <id,id>     Comma-separated tool ids (e.g. vscode,cursor)
   --target <id>         Add one target (repeatable)
   --workspace <path>    Project root for optional workspace copies
-  --workspace-templates Copy Templates/ into <workspace>/Templates/
+  --workspace-templates Copy templates/ into <workspace>/templates/
   --no-workspace-skills Skip copying .github/skills when using --workspace
   --source <path>       Pack repo root (default: parent of cli/)
   --install-root <path> Manifest folder (default: OS-specific pack metadata root)
@@ -123,7 +123,7 @@ async function main(): Promise<void> {
   if (interactive) {
     console.log('');
     console.log('  AI Agent Workflows — pack installer');
-    console.log('  Select where to install agents, Templates, and optional workspace files.');
+    console.log('  Select where to install agents, templates, and optional workspace files.');
     console.log('');
   }
 
@@ -131,7 +131,7 @@ async function main(): Promise<void> {
 
   if (interactive) {
     toolIds = await checkbox({
-      message: 'Which editors should receive agents + Templates?',
+      message: 'Which editors should receive agents + templates?',
       choices: registry.tools.map((t) => ({
         name: t.label,
         value: t.id,
@@ -171,7 +171,7 @@ async function main(): Promise<void> {
           checked: defaultSkills,
         },
         {
-          name: 'Copy Templates/ → workspace/Templates/',
+          name: 'Copy templates/ → workspace/templates/',
           value: 'templates' as const,
           checked: defaultTemplates,
         },

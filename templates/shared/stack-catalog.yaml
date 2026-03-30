@@ -1,0 +1,91 @@
+version: 1.0.0
+name: stack-catalog
+purpose: Canonical list of supported stacks and which template files define them.
+
+frontend:
+  - key: nextjs
+    framework: Next.js
+    spec: templates/frontend-nextjs/template-spec.yaml
+    env: templates/frontend-nextjs/.env.example
+    state_management: Zustand + TanStack Query
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true
+  - key: sveltekit
+    framework: SvelteKit
+    spec: templates/frontend-sveltekit/template-spec.yaml
+    env: templates/frontend-sveltekit/.env.example
+    state_management: Svelte stores + TanStack Query
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true
+  - key: angular
+    framework: Angular
+    spec: templates/frontend-angular/template-spec.yaml
+    env: templates/frontend-angular/.env.example
+    state_management: NgRx + RxJS services
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true
+
+backend:
+  - key: node_nestjs
+    framework: NestJS
+    spec: templates/backend-service/template-spec.yaml
+    env: templates/backend-service/.env.example
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true
+  - key: dotnet
+    framework: ASP.NET Core
+    spec: templates/backend-dotnet/template-spec.yaml
+    env: templates/backend-dotnet/.env.example
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true
+  - key: python
+    framework: FastAPI
+    spec: templates/backend-python/template-spec.yaml
+    env: templates/backend-python/.env.example
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true
+  - key: go
+    framework: Fiber
+    spec: templates/backend-go/template-spec.yaml
+    env: templates/backend-go/.env.example
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true
+  - key: java
+    framework: Spring Boot
+    spec: templates/backend-java/template-spec.yaml
+    env: templates/backend-java/.env.example
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true
+  - key: rust
+    framework: Axum
+    spec: templates/backend-rust/template-spec.yaml
+    env: templates/backend-rust/.env.example
+    wiki_update:
+      enabled: true
+      contract_ref: templates/shared/wiki-update-contract.yaml
+      output_mode_default: pr
+      human_approval_default: true

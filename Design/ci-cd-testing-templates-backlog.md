@@ -13,12 +13,12 @@ This backlog covers all architecture components defined in `Design/ci-cd-testing
 Create a canonical command-slot contract that every supported stack must satisfy for CI/CD and testing execution.
 
 ### Requirements
-- [ ] Add `Templates/shared/ci-command-contract.yaml` with required command slots.
+- [ ] Add `templates/shared/ci-command-contract.yaml` with required command slots.
 - [ ] Include slot definitions for `install`, `lint`, `build`, `unit_test`, `e2e_test`, `package`, and `deploy`.
 - [ ] Document required vs optional semantics (all required for this feature baseline).
 
 ### Technical Specification
-- Create file: `Templates/shared/ci-command-contract.yaml`.
+- Create file: `templates/shared/ci-command-contract.yaml`.
 - Define top-level fields: `version`, `name`, `slots`.
 - Keep schema simple and machine-parseable for future validator integration.
 - Ensure slot names match architecture doc and downstream mapping tasks.
@@ -54,17 +54,17 @@ Create a canonical command-slot contract that every supported stack must satisfy
 Define concrete CI/CD/test commands for each supported stack key while preserving the shared command-slot contract.
 
 ### Requirements
-- [ ] Add `Templates/shared/ci-stack-command-matrix.yaml`.
+- [ ] Add `templates/shared/ci-stack-command-matrix.yaml`.
 - [ ] Include mappings for frontend: `nextjs`, `sveltekit`, `angular`.
 - [ ] Include mappings for backend: `node_nestjs`, `dotnet`, `python`, `go`, `java`, `rust`.
 - [ ] Map every required command slot for every stack.
 
 ### Technical Specification
-- Create file: `Templates/shared/ci-stack-command-matrix.yaml`.
+- Create file: `templates/shared/ci-stack-command-matrix.yaml`.
 - Structure:
   - `version`
   - `stacks.<stack_key>.<slot_name>: <command>`
-- Use stack keys from `Templates/shared/stack-catalog.yaml`.
+- Use stack keys from `templates/shared/stack-catalog.yaml`.
 - Keep commands stack-native and runnable in fresh generated projects.
 
 ### Acceptance Criteria
@@ -98,15 +98,15 @@ Define concrete CI/CD/test commands for each supported stack key while preservin
 Create shared CI action templates that consume stack mappings and execute install/lint/build/unit/E2E in a consistent sequence.
 
 ### Requirements
-- [ ] Add reusable CI workflow template files under `Templates/shared/workflows/`.
+- [ ] Add reusable CI workflow template files under `templates/shared/workflows/`.
 - [ ] Ensure workflow can be parameterized by stack key and working directory.
 - [ ] Use command slots from the shared contract and stack matrix.
 - [ ] Include concurrency and path-filter guidance to reduce CI cost.
 
 ### Technical Specification
 - Create files:
-  - `Templates/shared/workflows/ci-pr.yaml`
-  - `Templates/shared/workflows/ci-main.yaml`
+  - `templates/shared/workflows/ci-pr.yaml`
+  - `templates/shared/workflows/ci-main.yaml`
 - Define template placeholders for `stack_key`, `working_directory`, and command expressions.
 - Sequence steps in deterministic order: install -> lint -> build -> unit_test -> e2e_test.
 - Emit artifacts/log grouping hooks for debugging.
@@ -142,15 +142,15 @@ Create shared CI action templates that consume stack mappings and execute instal
 Add shared CD templates that package artifacts and perform deployment-template steps with environment placeholders and approval gates.
 
 ### Requirements
-- [ ] Add deployment-oriented workflow templates under `Templates/shared/workflows/`.
+- [ ] Add deployment-oriented workflow templates under `templates/shared/workflows/`.
 - [ ] Include `package` and `deploy` contract slots.
 - [ ] Include environment protection and approval gate placeholders.
 - [ ] Avoid hardcoded secrets or provider-specific credentials.
 
 ### Technical Specification
 - Create files:
-  - `Templates/shared/workflows/cd-release.yaml`
-  - `Templates/shared/workflows/cd-deploy.yaml`
+  - `templates/shared/workflows/cd-release.yaml`
+  - `templates/shared/workflows/cd-deploy.yaml`
 - Add placeholders: `artifact_name`, `deploy_environment`, `secrets_namespace`.
 - Provide guarded deploy stages that can be enabled downstream.
 - Document minimum required secrets by name only.
@@ -192,15 +192,15 @@ Update each stack template spec to define starter unit-test expectations and com
 
 ### Technical Specification
 - Modify files:
-  - `Templates/frontend-nextjs/template-spec.yaml`
-  - `Templates/frontend-sveltekit/template-spec.yaml`
-  - `Templates/frontend-angular/template-spec.yaml`
-  - `Templates/backend-service/template-spec.yaml`
-  - `Templates/backend-dotnet/template-spec.yaml`
-  - `Templates/backend-python/template-spec.yaml`
-  - `Templates/backend-go/template-spec.yaml`
-  - `Templates/backend-java/template-spec.yaml`
-  - `Templates/backend-rust/template-spec.yaml`
+  - `templates/frontend-nextjs/template-spec.yaml`
+  - `templates/frontend-sveltekit/template-spec.yaml`
+  - `templates/frontend-angular/template-spec.yaml`
+  - `templates/backend-service/template-spec.yaml`
+  - `templates/backend-dotnet/template-spec.yaml`
+  - `templates/backend-python/template-spec.yaml`
+  - `templates/backend-go/template-spec.yaml`
+  - `templates/backend-java/template-spec.yaml`
+  - `templates/backend-rust/template-spec.yaml`
 - Add or extend testing sections with `unit_test` expectations.
 - Keep compatibility with existing capability IDs and governance structure.
 
@@ -283,9 +283,9 @@ Update repository parity tooling so CI/CD command contract completeness, workflo
 
 ### Technical Specification
 - Modify files:
-  - `Templates/tools/validate-parity.ts`
-  - `Templates/tools/validate-parity.test.ts`
-  - `Templates/shared/capability-parity-matrix.yaml` (only if adding explicit CI/testing parity keys)
+  - `templates/tools/validate-parity.ts`
+  - `templates/tools/validate-parity.test.ts`
+  - `templates/shared/capability-parity-matrix.yaml` (only if adding explicit CI/testing parity keys)
 - Add non-breaking validation functions with actionable error messages.
 - Ensure existing unstaged parity edits are not overwritten; merge carefully.
 
@@ -322,13 +322,13 @@ Document how to use reusable CI/CD templates, command mappings, and testing temp
 
 ### Requirements
 - [ ] Update root `README.md` with CI/CD + testing template overview.
-- [ ] Update `Templates/README.md` with command contract and workflow file references.
+- [ ] Update `templates/README.md` with command contract and workflow file references.
 - [ ] Add guidance on running parity validator for CI/CD + testing checks.
 
 ### Technical Specification
 - Modify files:
   - `README.md`
-  - `Templates/README.md`
+  - `templates/README.md`
 - Include examples of stack mapping and validation commands.
 - Keep docs aligned with actual file names introduced by T1 to T4.
 

@@ -24,7 +24,7 @@ describe('passthrough adapter', () => {
     }
   });
 
-  it('emits Templates/ prefixed paths for template files', async () => {
+  it('emits templates/ prefixed paths for template files', async () => {
     const ctx = { repoRoot, ...resolveRepoPaths(repoRoot) };
     const adapter = createPassthroughAdapter('vscode-agent');
     const arts = await adapter.adaptTemplates(ctx);
@@ -33,7 +33,7 @@ describe('passthrough adapter', () => {
     assert.equal(first?.kind, 'copy');
     if (first?.kind === 'copy') {
       const norm = first.targetSubpath.replace(/\//g, path.sep);
-      assert.ok(norm.startsWith(`Templates${path.sep}`));
+      assert.ok(norm.startsWith(`templates${path.sep}`));
     }
   });
 });
