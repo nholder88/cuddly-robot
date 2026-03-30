@@ -38,7 +38,7 @@ Cross-platform installer with an **interactive wizard** (default) or scripted fl
 From a clone of this repo you can link or install globally so the command `ai-agent-pack-install` is on your `PATH`. The published tarball includes `agents/`, `templates/`, `skills/`, and `cli/`; the default `--source` is that package root, so you can point **workspace** at any project.
 
 ```bash
-# Option A: global install from a local path (works while package.json has "private": true)
+# Option A: global install from a local path
 npm install -g /absolute/path/to/cuddly-robot
 
 # Option B: npm link from the repo (good for development)
@@ -53,7 +53,7 @@ ai-agent-pack-install --yes --targets vscode,cursor --workspace /path/to/any/pro
 
 That installs agents + templates into your VS Code/Cursor user prompt folders (machine-wide) and optionally copies **skills** and/or **templates** into the chosen project (`--workspace`). Use a different pack checkout with `--source /other/path/to/cuddly-robot` if needed.
 
-Publishing to the public npm registry would require removing `"private": true` and a package name that is not taken; until then, use `npm install -g <path>` or `npm link`.
+To publish: ensure the package name `ai-agent-workflows-tools` is available (or change `name` in [package.json](package.json)), run `npm login`, then `npm publish --access public`. A `LICENSE` file matching the `license` field is recommended before publishing.
 
 **Interactive** (no `--yes`): run `npm run pack:install` or `ai-agent-pack-install` and step through:
 

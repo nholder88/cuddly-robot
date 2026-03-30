@@ -1,8 +1,31 @@
 {
   "name": "ai-agent-workflows-tools",
-  "private": true,
   "version": "1.0.0",
-  "description": "Tooling for template parity validation",
+  "description": "VS Code and Cursor agent pack with templates, skills library, parity tooling, and a multi-IDE pack-install CLI.",
+  "keywords": [
+    "ai",
+    "agents",
+    "vscode",
+    "cursor",
+    "github-copilot",
+    "prompts",
+    "templates",
+    "skills",
+    "cli"
+  ],
+  "author": "Nigel <nholder88@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nholder88/cuddly-robot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nholder88/cuddly-robot/issues"
+  },
+  "homepage": "https://github.com/nholder88/cuddly-robot#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "type": "module",
   "bin": {
     "ai-agent-pack-install": "./bin/pack-install.mjs"
