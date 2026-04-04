@@ -2,7 +2,7 @@
 name: orchestrator
 description: >
   Master pipeline orchestrator. Runs the full agent pipeline for a given task:
-  validate → plan → clarify → implement → test → document → review → fix.
+  validate → plan → clarify → spec → implement → test → document → review → fix.
   Tracks pipeline state, enforces quality gates, retries failed stages, and
   escalates to the user when automated recovery is not possible.
   Use this when you want a task taken from raw idea to reviewed, tested,
@@ -32,6 +32,9 @@ handoffs:
   - label: Security review only
     agent: appsec-sentinel
     prompt: Run the AppSec audit only; write Review/security-audit-report.md with cited findings and remediation.
+  - label: Implementation spec only
+    agent: implementation-spec
+    prompt: Produce delta specs, design decisions, and task breakdown for this task without running the full pipeline.
   - label: Reverse engineer first
     agent: system-reverse-engineer
     prompt: Reverse engineer the codebase before running the pipeline.
@@ -62,6 +65,9 @@ INPUT
   │
   ▼
 [STAGE 3] PBI Clarification          ← skip if task is already a precise spec
+  │
+  ▼
+[STAGE 3.5] Implementation Spec     ← OpenSpec-inspired delta specs, design decisions, task breakdown
   │
   ▼
 [STAGE 4] Implementation             ← language-specific implementer agent
@@ -245,6 +251,48 @@ Use classification to decide which stages to skip. Document the classification a
 
 ---
 
+### STAGE 3.5 — Implementation Spec (conditional)
+
+**Skip when:** Task is `TRIVIAL`, or task is `BUG_FIX` with a clear root cause and localized fix (≤ 3 files). Also skip when the user provides a complete implementation spec or task breakdown upfront.
+
+**Run when:** Any of the following are true:
+
+- Task is `NEW_PROJECT` or `NEW_FEATURE`
+- Task is `REFACTOR` with structural changes across multiple modules
+- Task is `BUG_FIX` that touches > 3 files or requires design decisions
+- Stage 2 produced an architecture doc that needs translation into implementable tasks
+- PBI acceptance criteria from Stage 3 span multiple capabilities or services
+
+**Invoke:** `implementation-spec`
+
+**Pass in:**
+
+- PBI spec(s) from Stage 3 (or raw task if Stage 3 was skipped)
+- Architecture doc from Stage 2 (if produced)
+- Risk flags from Stage 1 (if any)
+- Tech stack and file structure context
+- Any existing specs or documentation discovered in Stage 0.5
+
+**The agent produces three artifacts:**
+
+1. **Delta Specs** — ADDED/MODIFIED/REMOVED requirements with WHEN/THEN scenarios for each capability in scope
+2. **Design Decisions** — Architectural choices with rationale, alternatives considered, and trade-offs (only when cross-cutting, security, performance, or ambiguity is present)
+3. **Task Breakdown** — Numbered checkbox list grouped by logical area, with file paths when codebase context is available, plus AC traceability table
+
+**Gate:** All of the following must be true:
+
+- Every PBI AC maps to at least one delta spec requirement
+- Every delta spec requirement has at least one testable WHEN/THEN scenario
+- Task breakdown covers all delta spec requirements (AC traceability table complete)
+- No unresolved open questions remain (or questions have been surfaced to user and answered)
+- Design decisions are present when the change is cross-cutting, introduces new dependencies, or has multiple valid approaches
+
+**On open questions found:** Surface specific questions to user with bounded options (A/B/C) where possible. Wait for answers before finalizing the spec. Record as `STAGE_3.5_WAITING`. Re-invoke `implementation-spec` with answers to complete the artifacts.
+
+**On gate failure:** Re-invoke `implementation-spec` with specific gaps identified. Max 2 iterations, then escalate to user.
+
+---
+
 ### STAGE 4 — Implementation
 
 **Run for all task types except `SPEC_ONLY`.**
@@ -271,11 +319,13 @@ Use classification to decide which stages to skip. Document the classification a
 
 **Pass in:**
 
-- AC map in scope (AC IDs + concise stage-relevant bullets)
+- **Implementation spec artifacts from Stage 3.5** (when produced): delta specs, design decisions, and task breakdown — the implementer works through the task breakdown checkbox-by-checkbox
+- AC map in scope (AC IDs + concise stage-relevant bullets) — used directly when Stage 3.5 was skipped
 - Spec/artifact pointers for deep context (only fetch full sections if blocked)
 - Architecture doc (if produced)
-- Any stage 1 risks to watch for during implementation
+- Any Stage 1 risks to watch for during implementation
 - Specific instruction: "Do not mark complete until build passes and you have run the test suite."
+- When Stage 3.5 task breakdown is present: "Follow the task breakdown in order. Check off each task as you complete it. Do not deviate from the spec without flagging the deviation."
 
 **Gate:**
 
@@ -762,6 +812,7 @@ When the pipeline completes (all gates pass), produce a final report:
 
 - Architecture doc: [path if created]
 - PBI spec: [path if created]
+- Implementation spec: [delta specs / design decisions / task breakdown — paths if created]
 - Files created: [list]
 - Files modified: [list]
 - Tests added: [count and paths]
@@ -804,7 +855,7 @@ Before producing the final report, append a final completion entry to `agent-pro
 - **Always pass a lean, stage-scoped context package.** Prefer AC IDs, concise bullets, and artifact pointers over full inlined documents.
 - **Fix loops are bounded.** 3 iterations maximum per stage (2 for Stage 4.5), then escalate.
 - **One implementer at a time on the same files.** Parallel test agents are fine; parallel implementers on shared files are not.
-- **The spec is the source of truth.** If implementation and spec disagree, flag it — do not silently resolve in favor of either.
+- **The spec is the source of truth.** If implementation and spec disagree, flag it — do not silently resolve in favor of either. When Stage 3.5 produces an implementation spec, the delta specs and task breakdown are the contract — deviations by the implementer must be flagged and reconciled.
 - **Carry risks forward.** A Risk flagged in Stage 1 that was not blocked must appear in context packages for Stages 4, 5, and 7 as risk IDs with one-line impact notes.
 - **UI/UX gate runs before tests.** Stage 4.5 must pass before tests are written — fixing theme violations and missing states after tests exist causes test churn. Always gate in this order: implement → UI/UX review → fix → test.
 - **Stage 0.5 is mandatory before design/implementation.** Stage 0.5 must pass, or user override must be explicitly recorded, before Stage 2 or Stage 4 begins.
