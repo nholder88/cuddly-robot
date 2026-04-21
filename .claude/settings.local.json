@@ -12,7 +12,7 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(ls:*)",
-      "Bash(wc -l D:/ai-agent-workflows/agents/*.agent.md)"
+      "Bash(wc -l agents/*.agent.md)"
     ]
   }
 }
