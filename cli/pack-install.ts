@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /**
- * Multi-IDE pack installer (VS Code / Cursor). See README "CLI installer".
+ * Multi-IDE pack installer (VS Code / Cursor / Claude Code). See README "CLI installer".
  */
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { checkbox, confirm, input } from '@inquirer/prompts';
+import { checkbox, confirm, input, select } from '@inquirer/prompts';
 import { defaultInstallRoot, getNodePlatform } from './lib/paths.js';
 import { loadToolsRegistry, listToolIds } from './lib/registry.js';
 import { runInstall, type InstallManifestV3 } from './lib/pipeline.js';
+import { listAgents } from './lib/agents.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -26,6 +27,10 @@ interface ParsedArgs {
   yes: boolean;
   help: boolean;
   registryPath: string | null;
+  scope: 'global' | 'local';
+  agents: string[] | null;
+  allAgents: boolean;
+  localRoot: string | null;
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
@@ -40,6 +45,10 @@ function parseArgs(argv: string[]): ParsedArgs {
     yes: false,
     help: false,
     registryPath: null,
+    scope: 'global',
+    agents: null,
+    allAgents: false,
+    localRoot: null,
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -68,6 +77,19 @@ function parseArgs(argv: string[]): ParsedArgs {
       out.dryRun = true;
     } else if (a === '--yes' || a === '-y') {
       out.yes = true;
+    } else if (a === '--scope' && argv[i + 1]) {
+      const s = argv[++i]!.trim();
+      if (s !== 'global' && s !== 'local') {
+        console.error(`--scope must be "global" or "local", got "${s}"`);
+        process.exit(1);
+      }
+      out.scope = s;
+    } else if (a === '--agents' && argv[i + 1]) {
+      out.agents = argv[++i]!.split(',').map((s) => s.trim()).filter(Boolean);
+    } else if (a === '--all-agents') {
+      out.allAgents = true;
+    } else if (a === '--local-root' && argv[i + 1]) {
+      out.localRoot = path.resolve(argv[++i]!);
     } else if (!a.startsWith('-')) {
       continue;
     } else {
@@ -86,12 +108,16 @@ function printHelp(): void {
 Install agents + templates into selected IDE prompt folders; optionally copy
 skills and templates into a project workspace.
 
-Run without --yes for an interactive wizard (select editors, workspace options,
-dry-run, confirm).
+Run without --yes for an interactive wizard (select editors, scope, agents,
+workspace options, dry-run, confirm).
 
 Options:
-  --targets <id,id>     Comma-separated tool ids (e.g. vscode,cursor)
+  --targets <id,id>     Comma-separated tool ids (e.g. claude,vscode,cursor)
   --target <id>         Add one target (repeatable)
+  --scope local|global  Install scope: local (project folder) or global (OS user dirs) [default: global]
+  --agents <name,name>  Agent names to install (e.g. orchestrator,architect-planner)
+  --all-agents          Install all agents without prompting (non-interactive shortcut)
+  --local-root <path>   Project root for local scope installs (default: cwd)
   --workspace <path>    Project root for optional workspace copies
   --workspace-templates Copy templates/ into <workspace>/templates/
   --no-workspace-skills Skip copying .github/skills when using --workspace
@@ -119,6 +145,7 @@ async function main(): Promise<void> {
   const registry = loadToolsRegistry(args.registryPath ?? undefined);
   const validIds = listToolIds(registry);
   const interactive = !args.yes;
+  const repoRoot = args.source;
 
   if (interactive) {
     console.log('');
@@ -126,6 +153,8 @@ async function main(): Promise<void> {
     console.log('  Select where to install agents, templates, and optional workspace files.');
     console.log('');
   }
+
+  // ── IDE target selection ──────────────────────────────────────────────────
 
   let toolIds: string[] = args.targets ?? [];
 
@@ -153,13 +182,105 @@ async function main(): Promise<void> {
     }
   }
 
+  // ── Install scope ─────────────────────────────────────────────────────────
+
+  let scope: 'global' | 'local' = args.scope;
+  let localInstallRoot: string | null = args.localRoot;
+
+  if (interactive) {
+    scope = await select({
+      message: 'Install scope?',
+      choices: [
+        {
+          name: 'Global — available in all projects (OS user directories)',
+          value: 'global' as const,
+        },
+        {
+          name: 'Local  — this project only (installs into project folder)',
+          value: 'local' as const,
+        },
+      ],
+      default: args.scope,
+    });
+
+    if (scope === 'local') {
+      const localRootInput = await input({
+        message: 'Project root for local install',
+        default: args.localRoot ?? process.cwd(),
+      });
+      localInstallRoot = localRootInput.trim() ? path.resolve(localRootInput.trim()) : null;
+    }
+  }
+
+  // ── Agent selection ───────────────────────────────────────────────────────
+
+  const { agentsSourceDir } = { agentsSourceDir: path.join(repoRoot, 'agents') };
+  const allAgentMeta = await listAgents(agentsSourceDir);
+
+  let selectedAgentFiles: string[] | undefined;
+
+  if (!interactive) {
+    if (args.agents) {
+      // Map provided names to filenames (support both bare name and full filename)
+      const nameSet = new Set(args.agents.map((n) => n.toLowerCase()));
+      selectedAgentFiles = allAgentMeta
+        .filter(
+          (a) =>
+            nameSet.has(a.name.toLowerCase()) ||
+            nameSet.has(a.filename.toLowerCase()) ||
+            nameSet.has(path.basename(a.filename, '.agent.md').toLowerCase()),
+        )
+        .map((a) => a.filename);
+
+      if (selectedAgentFiles.length === 0) {
+        console.error(`No agents matched: ${args.agents.join(', ')}`);
+        console.error(`Available: ${allAgentMeta.map((a) => a.name).join(', ')}`);
+        process.exit(1);
+      }
+    }
+    // --all-agents or --yes without --agents → selectedAgentFiles stays undefined (install all)
+  } else {
+    // Build checkbox choices grouped by category
+    const categoryOrder = ['Orchestration', 'Implementers', 'Specialists', 'Review & QA', 'Utilities'];
+    const grouped = new Map<string, typeof allAgentMeta>();
+    for (const cat of categoryOrder) grouped.set(cat, []);
+    for (const agent of allAgentMeta) {
+      const bucket = grouped.get(agent.category) ?? grouped.set(agent.category, []).get(agent.category)!;
+      bucket.push(agent);
+    }
+
+    type CheckboxChoice =
+      | { type: 'separator'; separator: string }
+      | { name: string; value: string; checked: boolean };
+
+    const choices: CheckboxChoice[] = [];
+    for (const [cat, agents] of grouped) {
+      if (agents.length === 0) continue;
+      choices.push({ type: 'separator', separator: `── ${cat} ──` });
+      for (const agent of agents) {
+        const label = agent.description
+          ? `${agent.name.padEnd(32)} ${agent.description.slice(0, 60)}`
+          : agent.name;
+        choices.push({ name: label, value: agent.filename, checked: true });
+      }
+    }
+
+    const picked = await checkbox({
+      message: 'Which agents to install?',
+      choices,
+    });
+
+    selectedAgentFiles = picked.length === allAgentMeta.length ? undefined : picked;
+  }
+
+  // ── Workspace options ─────────────────────────────────────────────────────
+
   let workspaceRoot: string | null = args.workspace != null ? path.resolve(args.workspace) : null;
   let workspaceTemplates = args.workspaceTemplates;
   let workspaceSkills = true;
 
   if (interactive) {
-    const defaultSkills =
-      args.workspace !== undefined ? !args.noWorkspaceSkills : false;
+    const defaultSkills = args.workspace !== undefined ? !args.noWorkspaceSkills : false;
     const defaultTemplates = args.workspaceTemplates;
 
     const wsChoices = await checkbox({
@@ -218,6 +339,9 @@ async function main(): Promise<void> {
       workspaceSkills: workspaceRoot ? workspaceSkills : false,
       workspaceTemplates,
       dryRun: dryRunInteractive,
+      selectedAgentFiles,
+      scope,
+      localInstallRoot: localInstallRoot ?? undefined,
     });
 
     printSummary(manifestPath, manifest, dryRunInteractive);
@@ -239,6 +363,9 @@ async function main(): Promise<void> {
     workspaceSkills,
     workspaceTemplates,
     dryRun: args.dryRun,
+    selectedAgentFiles,
+    scope,
+    localInstallRoot: localInstallRoot ?? undefined,
   });
 
   printSummary(manifestPath, manifest, args.dryRun);

@@ -13,6 +13,8 @@ export interface ToolDefinition {
   label: string;
   adapterId: string;
   agentsRootByPlatform: Partial<Record<NodePlatform, string>>;
+  /** Relative path from the project root used for local-scope installs. */
+  localRelativePath?: string;
 }
 
 export function loadToolsRegistry(registryPath?: string): ToolRegistryFile {
@@ -29,6 +31,13 @@ export function resolveToolAgentsRoot(tool: ToolDefinition, platform: NodePlatfo
     throw new Error(`Tool "${tool.id}" has no agentsRoot for platform "${platform}"`);
   }
   return expandPathTemplate(template, platform);
+}
+
+export function resolveToolLocalPath(tool: ToolDefinition, localRoot: string): string {
+  if (!tool.localRelativePath) {
+    throw new Error(`Tool "${tool.id}" does not support local install (no localRelativePath configured)`);
+  }
+  return path.join(localRoot, ...tool.localRelativePath.split('/'));
 }
 
 export function listToolIds(registry: ToolRegistryFile): string[] {

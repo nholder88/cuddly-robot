@@ -3,7 +3,7 @@ import * as fsSync from 'node:fs';
 import * as path from 'node:path';
 import { getAdapter, type InstallArtifact } from './adapters.js';
 import { assertRepoLayout, resolveRepoPaths, getNodePlatform } from './paths.js';
-import { getToolById, resolveToolAgentsRoot, type ToolDefinition, type ToolRegistryFile } from './registry.js';
+import { getToolById, resolveToolAgentsRoot, resolveToolLocalPath, type ToolDefinition, type ToolRegistryFile } from './registry.js';
 
 export interface RunInstallOptions {
   repoRoot: string;
@@ -15,6 +15,12 @@ export interface RunInstallOptions {
   workspaceSkills: boolean;
   workspaceTemplates: boolean;
   dryRun: boolean;
+  /** Subset of agent filenames to install. Undefined installs all agents. */
+  selectedAgentFiles?: string[];
+  /** 'local' installs into localInstallRoot using tool.localRelativePath; 'global' uses OS user dirs (default). */
+  scope?: 'global' | 'local';
+  /** Project root for local-scope installs (defaults to process.cwd()). */
+  localInstallRoot?: string;
 }
 
 export interface ManifestTarget {
@@ -75,11 +81,22 @@ function readPackageVersion(repoRoot: string): string {
 
 async function emitForTool(
   tool: ToolDefinition,
-  ctx: { repoRoot: string; agentsSourceDir: string; templatesSourceDir: string; skillsSourceDir: string },
+  ctx: {
+    repoRoot: string;
+    agentsSourceDir: string;
+    templatesSourceDir: string;
+    skillsSourceDir: string;
+    selectedAgentFiles?: string[];
+  },
   dryRun: boolean,
+  scope: 'global' | 'local' = 'global',
+  localInstallRoot?: string,
 ): Promise<{ target: ManifestTarget; installedFiles: string[] }> {
   const platform = getNodePlatform();
-  const agentsRoot = resolveToolAgentsRoot(tool, platform);
+  const agentsRoot =
+    scope === 'local' && localInstallRoot
+      ? resolveToolLocalPath(tool, localInstallRoot)
+      : resolveToolAgentsRoot(tool, platform);
   const adapter = getAdapter(tool.adapterId);
 
   const agentArts = await adapter.adaptAgents(ctx);
@@ -183,12 +200,21 @@ export async function runInstall(opts: RunInstallOptions): Promise<{ manifest: I
   }
 
   const { agentsSourceDir, templatesSourceDir, skillsSourceDir } = resolveRepoPaths(repoRoot);
-  const ctx = { repoRoot, agentsSourceDir, templatesSourceDir, skillsSourceDir };
+  const ctx = {
+    repoRoot,
+    agentsSourceDir,
+    templatesSourceDir,
+    skillsSourceDir,
+    selectedAgentFiles: opts.selectedAgentFiles,
+  };
+
+  const scope = opts.scope ?? 'global';
+  const localInstallRoot = opts.localInstallRoot ?? process.cwd();
 
   const targets: ManifestTarget[] = [];
   for (const toolId of opts.toolIds) {
     const tool = getToolById(opts.registry, toolId);
-    const { target } = await emitForTool(tool, ctx, opts.dryRun);
+    const { target } = await emitForTool(tool, ctx, opts.dryRun, scope, localInstallRoot);
     targets.push(target);
   }
 

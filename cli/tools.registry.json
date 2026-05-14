@@ -2,6 +2,17 @@
   "version": 1,
   "tools": [
     {
+      "id": "claude",
+      "label": "Claude Code (.claude/agents/)",
+      "adapterId": "claude-agent",
+      "agentsRootByPlatform": {
+        "win32": "{HOME}/.claude/agents",
+        "darwin": "{HOME}/.claude/agents",
+        "linux": "{HOME}/.claude/agents"
+      },
+      "localRelativePath": ".claude/agents"
+    },
+    {
       "id": "vscode",
       "label": "VS Code (GitHub Copilot agents / prompts)",
       "adapterId": "vscode-agent",
@@ -9,7 +20,8 @@
         "win32": "{APPDATA}/Code/User/prompts",
         "darwin": "{HOME}/Library/Application Support/Code/User/prompts",
         "linux": "{HOME}/.config/Code/User/prompts"
-      }
+      },
+      "localRelativePath": ".vscode/agents"
     },
     {
       "id": "cursor",
@@ -19,7 +31,8 @@
         "win32": "{APPDATA}/Cursor/User/prompts",
         "darwin": "{HOME}/Library/Application Support/Cursor/User/prompts",
         "linux": "{HOME}/.config/Cursor/User/prompts"
-      }
+      },
+      "localRelativePath": ".cursor/rules"
     }
   ]
 }

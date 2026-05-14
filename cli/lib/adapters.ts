@@ -10,6 +10,8 @@ export interface AdapterContext {
   agentsSourceDir: string;
   templatesSourceDir: string;
   skillsSourceDir: string;
+  /** When set, only these agent filenames (basenames) will be installed. */
+  selectedAgentFiles?: string[];
 }
 
 export interface SkillsAdapterContext extends AdapterContext {
@@ -48,7 +50,10 @@ export function createPassthroughAdapter(id: string): PackAdapter {
     id,
     async adaptAgents(ctx: AdapterContext): Promise<InstallArtifact[]> {
       const files = listFilesRecursive(ctx.agentsSourceDir);
-      return files.map((abs) => ({
+      const filtered = ctx.selectedAgentFiles
+        ? files.filter((f) => ctx.selectedAgentFiles!.includes(path.basename(f)))
+        : files;
+      return filtered.map((abs) => ({
         kind: 'copy' as const,
         targetSubpath: path.basename(abs),
         sourceAbsolute: abs,
@@ -84,10 +89,12 @@ export function createPassthroughAdapter(id: string): PackAdapter {
   };
 }
 
+const passthroughClaude = createPassthroughAdapter('claude-agent');
 const passthroughVscode = createPassthroughAdapter('vscode-agent');
 const passthroughCursor = createPassthroughAdapter('cursor-agent');
 
 const adapterById: Record<string, PackAdapter> = {
+  'claude-agent': passthroughClaude,
   'vscode-agent': passthroughVscode,
   'cursor-agent': passthroughCursor,
 };

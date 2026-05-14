@@ -24,6 +24,31 @@ describe('passthrough adapter', () => {
     }
   });
 
+  it('returns all agents when selectedAgentFiles is undefined', async () => {
+    const ctx = { repoRoot, ...resolveRepoPaths(repoRoot) };
+    const adapter = createPassthroughAdapter('vscode-agent');
+    const all = await adapter.adaptAgents(ctx);
+    const withUndefined = await adapter.adaptAgents({ ...ctx, selectedAgentFiles: undefined });
+    assert.equal(all.length, withUndefined.length);
+  });
+
+  it('returns only selected agents when selectedAgentFiles is provided', async () => {
+    const ctx = { repoRoot, ...resolveRepoPaths(repoRoot), selectedAgentFiles: ['orchestrator.agent.md'] };
+    const adapter = createPassthroughAdapter('vscode-agent');
+    const arts = await adapter.adaptAgents(ctx);
+    assert.equal(arts.length, 1);
+    if (arts[0]?.kind === 'copy') {
+      assert.equal(path.basename(arts[0].sourceAbsolute), 'orchestrator.agent.md');
+    }
+  });
+
+  it('returns empty array when selectedAgentFiles is an empty array', async () => {
+    const ctx = { repoRoot, ...resolveRepoPaths(repoRoot), selectedAgentFiles: [] };
+    const adapter = createPassthroughAdapter('vscode-agent');
+    const arts = await adapter.adaptAgents(ctx);
+    assert.equal(arts.length, 0);
+  });
+
   it('emits templates/ prefixed paths for template files', async () => {
     const ctx = { repoRoot, ...resolveRepoPaths(repoRoot) };
     const adapter = createPassthroughAdapter('vscode-agent');
