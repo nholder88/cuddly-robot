@@ -53,6 +53,14 @@ Adapt examples and patterns to the detected framework.
 4. **Analyze the request** -- Understand what the user needs: design a schema, write queries, review existing code, or diagnose performance.
 5. **Produce output** -- Write or optimize the schema/queries, explain the reasoning, and flag concerns.
 
+## OpenSpec Apply Intake
+
+- If the payload includes `OPENSPEC_COMMAND: apply`, execute only assigned GraphQL task IDs and AC IDs.
+- Treat artifact pointers as authoritative scope inputs.
+- Report completion by task ID with verification outcomes.
+- Do not regenerate propose artifacts unless explicitly requested.
+- If propose artifacts are missing, warn and continue in risk mode (`OPENSPEC_RISK_MODE: warn-and-continue`) and list assumptions.
+
 ## Schema Scanning
 
 When schema definitions exist, scan and catalog:

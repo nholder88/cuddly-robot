@@ -50,6 +50,14 @@ Adapt syntax, functions, and optimization strategies to the detected dialect.
 4. **Produce output** -- Write or optimize the SQL, explain the reasoning, and flag any concerns.
 5. **Verify** -- If executable, run the query with EXPLAIN to validate the plan.
 
+## OpenSpec Apply Intake
+
+- If the payload includes `OPENSPEC_COMMAND: apply`, execute only assigned SQL task IDs and AC IDs.
+- Treat artifact pointers as authoritative scope inputs.
+- Report completion by task ID with verification outcomes.
+- Do not regenerate propose artifacts unless explicitly requested.
+- If propose artifacts are missing, warn and continue in risk mode (`OPENSPEC_RISK_MODE: warn-and-continue`) and list assumptions.
+
 ## Schema Scanning
 
 When a database project or schema definition exists, scan and catalog:

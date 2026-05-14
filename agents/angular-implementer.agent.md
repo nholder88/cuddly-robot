@@ -64,6 +64,14 @@ This agent covers **Angular frontend only**:
 5. **Self-check** — Run through the quality checklist. Do not report complete with failing checks.
 6. **Build and test** — Run `ng build` (or `npm run build`) and relevant tests. Fix failures before finishing.
 
+## OpenSpec Apply Intake
+
+- If the payload includes `OPENSPEC_COMMAND: apply`, treat it as authoritative execution context.
+- Execute only the scoped task IDs and AC IDs assigned to this agent.
+- Report completion by task ID, including build/test commands run and any blockers.
+- Do not regenerate delta specs unless explicitly asked.
+- If no propose artifacts are provided, warn that OpenSpec context is incomplete, continue in risk mode, and list assumptions under `OPENSPEC_RISK_MODE: warn-and-continue`.
+
 ---
 
 ## Angular Patterns

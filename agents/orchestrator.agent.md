@@ -34,7 +34,7 @@ handoffs:
     prompt: Run the AppSec audit only; write Review/security-audit-report.md with cited findings and remediation.
   - label: Implementation spec only
     agent: implementation-spec
-    prompt: Produce delta specs, design decisions, and task breakdown for this task without running the full pipeline.
+    prompt: Run openspec propose for this task and return the spec artifacts without running the full pipeline.
   - label: Reverse engineer first
     agent: system-reverse-engineer
     prompt: Reverse engineer the codebase before running the pipeline.
@@ -67,10 +67,10 @@ INPUT
 [STAGE 3] PBI Clarification          ← skip if task is already a precise spec
   │
   ▼
-[STAGE 3.5] Implementation Spec     ← OpenSpec-inspired delta specs, design decisions, task breakdown
+[STAGE 3.5] OpenSpec Propose        ← delta specs, design decisions, task breakdown
   │
   ▼
-[STAGE 4] Implementation             ← language-specific implementer agent
+[STAGE 4] OpenSpec Apply             ← implementation-spec dispatches implementers
   │
   ▼
 [STAGE 4.5] UI/UX Review             ← only when UI components/pages were modified
@@ -251,9 +251,9 @@ Use classification to decide which stages to skip. Document the classification a
 
 ---
 
-### STAGE 3.5 — Implementation Spec (conditional)
+### STAGE 3.5 — OpenSpec Propose (conditional)
 
-**Skip when:** Task is `TRIVIAL`, or task is `BUG_FIX` with a clear root cause and localized fix (≤ 3 files). Also skip when the user provides a complete implementation spec or task breakdown upfront.
+**Skip when:** Task is `TRIVIAL`, or task is `BUG_FIX` with a clear root cause and localized fix (≤ 3 files).
 
 **Run when:** Any of the following are true:
 
@@ -263,7 +263,7 @@ Use classification to decide which stages to skip. Document the classification a
 - Stage 2 produced an architecture doc that needs translation into implementable tasks
 - PBI acceptance criteria from Stage 3 span multiple capabilities or services
 
-**Invoke:** `implementation-spec`
+**Invoke:** `implementation-spec` with embedded command `openspec propose`
 
 **Pass in:**
 
@@ -272,6 +272,8 @@ Use classification to decide which stages to skip. Document the classification a
 - Risk flags from Stage 1 (if any)
 - Tech stack and file structure context
 - Any existing specs or documentation discovered in Stage 0.5
+- `OPENSPEC_COMMAND: propose`
+- `OPENSPEC_STATE: PROPOSED`
 
 **The agent produces three artifacts:**
 
@@ -287,15 +289,19 @@ Use classification to decide which stages to skip. Document the classification a
 - No unresolved open questions remain (or questions have been surfaced to user and answered)
 - Design decisions are present when the change is cross-cutting, introduces new dependencies, or has multiple valid approaches
 
-**On open questions found:** Surface specific questions to user with bounded options (A/B/C) where possible. Wait for answers before finalizing the spec. Record as `STAGE_3.5_WAITING`. Re-invoke `implementation-spec` with answers to complete the artifacts.
+**On open questions found:** Surface specific questions to user with bounded options (A/B/C) where possible. Wait for answers before finalizing the spec. Record as `STAGE_3.5_WAITING`. Re-invoke `implementation-spec` with `openspec propose` and answers to complete the artifacts.
 
 **On gate failure:** Re-invoke `implementation-spec` with specific gaps identified. Max 2 iterations, then escalate to user.
 
 ---
 
-### STAGE 4 — Implementation
+### STAGE 4 — OpenSpec Apply
 
 **Run for all task types except `SPEC_ONLY`.**
+
+**Invoke:** `implementation-spec` with embedded command `openspec apply`.
+
+The implementation-spec agent owns apply orchestration and dispatches language/framework implementers as apply executors.
 
 **Select implementer by detected language/framework:**
 
@@ -315,17 +321,19 @@ Use classification to decide which stages to skip. Document the classification a
 | MongoDB queries / schema                                 | `mongodb-specialist`              |
 | Redis / caching                                          | `redis-specialist`                |
 
-**If multiple languages are involved**, run implementers sequentially, passing the output of each as context for the next. Never run two implementers on the same files simultaneously.
+**If multiple languages are involved**, `openspec apply` must dispatch implementers sequentially for overlapping file sets and may parallelize only disjoint scopes.
 
 **Pass in:**
 
-- **Implementation spec artifacts from Stage 3.5** (when produced): delta specs, design decisions, and task breakdown — the implementer works through the task breakdown checkbox-by-checkbox
-- AC map in scope (AC IDs + concise stage-relevant bullets) — used directly when Stage 3.5 was skipped
+- **Implementation spec artifacts from Stage 3.5**: delta specs, design decisions, and task breakdown
+- AC map in scope (AC IDs + concise stage-relevant bullets)
 - Spec/artifact pointers for deep context (only fetch full sections if blocked)
 - Architecture doc (if produced)
 - Any Stage 1 risks to watch for during implementation
 - Specific instruction: "Do not mark complete until build passes and you have run the test suite."
-- When Stage 3.5 task breakdown is present: "Follow the task breakdown in order. Check off each task as you complete it. Do not deviate from the spec without flagging the deviation."
+- `OPENSPEC_COMMAND: apply`
+- `OPENSPEC_STATE: APPLY_IN_PROGRESS`
+- When applying: "Follow the task breakdown in order. Check off each task as you complete it. Do not deviate from the spec without flagging the deviation."
 
 **Gate:**
 
@@ -333,6 +341,7 @@ Use classification to decide which stages to skip. Document the classification a
 - No new linting errors introduced
 - Implementation covers all acceptance criteria in scope (by AC ID mapping)
 - If any files in `templates/**` were modified, `node templates/tools/validate-parity.ts --root .` must pass before Stage 4 can be marked complete.
+- `openspec apply` completion report includes per-implementer task status and unresolved tasks.
 
 **On gate failure:** Retry implementation once with the specific failure output. If it fails again, escalate.
 
@@ -625,6 +634,11 @@ During Stage 0 and Stage 0.5, also determine:
 - `DOC_PATHS_FOUND: [path1, path2, ...]`
 - `REVERSE_ENGINEER_SUGGESTED: true/false`
 - `REVERSE_ENGINEER_RUN: true/false`
+- `OPENSPEC_COMMAND: propose|apply|none`
+- `OPENSPEC_STATE: PROPOSED|NEEDS_CLARIFICATION|APPROVED|APPLY_IN_PROGRESS|APPLY_BLOCKED|APPLY_COMPLETE`
+- `OPENSPEC_ARTIFACT_PATHS: [path1, path2, ...]`
+- `OPENSPEC_APPLY_TARGETS: [agent1, agent2, ...]`
+- `OPENSPEC_RISK_MODE: normal|warn-and-continue`
 
 Example todo items (updated):
 

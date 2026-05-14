@@ -76,6 +76,14 @@ Never log secrets, tokens, passwords, or raw PII payloads.
 5. Run build/lint/tests and fix regressions before reporting complete.
 6. If requirements are ambiguous, hand off to `pbi-clarifier`.
 
+## OpenSpec Apply Intake
+
+- If the payload includes `OPENSPEC_COMMAND: apply`, execute only assigned backend task IDs.
+- Use AC IDs and artifact pointers as the source of truth for scope.
+- Report status per task ID with verification commands and outcomes.
+- Do not rewrite propose artifacts unless explicitly requested.
+- If propose artifacts are missing, warn and continue in risk mode (`OPENSPEC_RISK_MODE: warn-and-continue`) and clearly list assumptions.
+
 ## Implementation Guidelines
 
 - Prefer typed contracts (interfaces/types) and avoid `any`.

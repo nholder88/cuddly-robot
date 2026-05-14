@@ -50,6 +50,14 @@ Adapt examples and patterns to the detected client library.
 4. **Produce output** -- Write or optimize the implementation, explain the reasoning, and flag concerns.
 5. **Verify** -- If a Redis instance is accessible, verify with `MONITOR`, `SLOWLOG`, or `INFO` commands.
 
+## OpenSpec Apply Intake
+
+- If the payload includes `OPENSPEC_COMMAND: apply`, execute only assigned Redis task IDs and AC IDs.
+- Treat artifact pointers as authoritative scope inputs.
+- Report completion by task ID with verification outcomes.
+- Do not regenerate propose artifacts unless explicitly requested.
+- If propose artifacts are missing, warn and continue in risk mode (`OPENSPEC_RISK_MODE: warn-and-continue`) and list assumptions.
+
 ## Data Structure Selection
 
 | Use Case | Data Structure | Key Pattern | Commands |

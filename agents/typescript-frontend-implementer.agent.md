@@ -86,6 +86,14 @@ Use this agent directly for React, Vue, Nuxt, and other TypeScript frontend work
 6. **Self-check** — Run through the quality checklist. Do not report complete with failing checks.
 7. **Build and test** — Run `npm run build` or equivalent. Fix failures before finishing.
 
+## OpenSpec Apply Intake
+
+- If the payload includes `OPENSPEC_COMMAND: apply`, execute only assigned frontend task IDs.
+- Use AC IDs and artifact pointers as the source of truth for scope.
+- Report status per task ID with verification commands and outcomes.
+- Do not regenerate spec artifacts unless explicitly requested.
+- If propose artifacts are missing, warn and continue in risk mode (`OPENSPEC_RISK_MODE: warn-and-continue`) and list assumptions.
+
 ---
 
 ## Framework Patterns
