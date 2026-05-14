@@ -63,6 +63,7 @@ Adapt syntax, functions, and optimization strategies to the detected dialect.
 When a database project or schema definition exists, scan and catalog:
 
 **ORM / Schema sources:**
+
 - Prisma: `schema.prisma` -- models, fields, relations, indexes, enums
 - TypeORM: entity decorators -- `@Entity`, `@Column`, `@ManyToOne`, `@Index`
 - Sequelize: model definitions -- `define`, associations
@@ -71,6 +72,7 @@ When a database project or schema definition exists, scan and catalog:
 - SQL Server projects: `.sqlproj`, `.sql` table/view/procedure definitions
 
 **Migration sources:**
+
 - `migrations/` folders (Prisma, TypeORM, Sequelize, Django, Alembic, Flyway, Liquibase)
 - Raw `.sql` migration files
 
@@ -142,6 +144,7 @@ EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) SELECT ...;
 ```
 
 **Red flags in explain plans:**
+
 - `Seq Scan` on large tables -- missing index
 - `Nested Loop` with high row estimates -- consider hash or merge join
 - `Sort` with high memory -- add index to avoid sorting
@@ -150,15 +153,15 @@ EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) SELECT ...;
 
 ### Common Bottlenecks and Fixes
 
-| Bottleneck | Symptom | Fix |
-|------------|---------|-----|
-| Missing index | Seq Scan on filtered column | `CREATE INDEX` on WHERE/JOIN columns |
-| N+1 queries | Many small queries in a loop | Use JOINs or batch queries |
-| Full table scan | No index used despite WHERE clause | Check column types match, add composite index |
-| Lock contention | Queries waiting on locks | Reduce transaction scope, use `SKIP LOCKED` |
-| Large result sets | Slow response, high memory | Add pagination (LIMIT/OFFSET or cursor) |
-| Unoptimized subquery | Correlated subquery re-executes per row | Rewrite as JOIN or CTE |
-| Missing statistics | Planner chooses bad plan | Run `ANALYZE` on the table |
+| Bottleneck           | Symptom                                 | Fix                                           |
+| -------------------- | --------------------------------------- | --------------------------------------------- |
+| Missing index        | Seq Scan on filtered column             | `CREATE INDEX` on WHERE/JOIN columns          |
+| N+1 queries          | Many small queries in a loop            | Use JOINs or batch queries                    |
+| Full table scan      | No index used despite WHERE clause      | Check column types match, add composite index |
+| Lock contention      | Queries waiting on locks                | Reduce transaction scope, use `SKIP LOCKED`   |
+| Large result sets    | Slow response, high memory              | Add pagination (LIMIT/OFFSET or cursor)       |
+| Unoptimized subquery | Correlated subquery re-executes per row | Rewrite as JOIN or CTE                        |
+| Missing statistics   | Planner chooses bad plan                | Run `ANALYZE` on the table                    |
 
 ### Index Strategy
 

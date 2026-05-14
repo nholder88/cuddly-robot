@@ -51,16 +51,19 @@ You are a senior database engineer specializing in MongoDB and document database
 When schema definitions exist, scan and catalog:
 
 **Mongoose models:**
+
 - Schema definitions with field types, required flags, defaults, validators
 - Indexes defined via `schema.index()` or field-level `index: true`
 - References (`ref`) and virtual populations
 - Discriminators and subdocuments
 
 **Prisma with MongoDB:**
+
 - Models with `@db.ObjectId`, embedded types, relations
 - Unique constraints, indexes
 
 **Native validation schemas:**
+
 - `$jsonSchema` validators on collections
 - `createIndex` definitions
 
@@ -71,36 +74,43 @@ When schema definitions exist, scan and catalog:
 ### Find with Projection and Sort
 
 ```javascript
-db.orders.find(
-  {
-    status: "completed",
-    createdAt: { $gte: new Date("2024-01-01") }
-  },
-  {
-    _id: 1,
-    customerId: 1,
-    total: 1,
-    createdAt: 1
-  }
-).sort({ createdAt: -1 }).limit(50);
+db.orders
+  .find(
+    {
+      status: 'completed',
+      createdAt: { $gte: new Date('2024-01-01') },
+    },
+    {
+      _id: 1,
+      customerId: 1,
+      total: 1,
+      createdAt: 1,
+    }
+  )
+  .sort({ createdAt: -1 })
+  .limit(50);
 ```
 
 ### Aggregation Pipeline
 
 ```javascript
 db.orders.aggregate([
-  { $match: { status: "completed" } },
-  { $group: {
-      _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
-      revenue: { $sum: "$total" },
-      count: { $sum: 1 }
-  }},
+  { $match: { status: 'completed' } },
+  {
+    $group: {
+      _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
+      revenue: { $sum: '$total' },
+      count: { $sum: 1 },
+    },
+  },
   { $sort: { _id: 1 } },
-  { $addFields: {
-      month: "$_id",
-      avgOrderValue: { $divide: ["$revenue", "$count"] }
-  }},
-  { $project: { _id: 0 } }
+  {
+    $addFields: {
+      month: '$_id',
+      avgOrderValue: { $divide: ['$revenue', '$count'] },
+    },
+  },
+  { $project: { _id: 0 } },
 ]);
 ```
 
@@ -108,10 +118,10 @@ db.orders.aggregate([
 
 ```javascript
 db.users.updateOne(
-  { _id: userId, "cart.productId": { $ne: productId } },
+  { _id: userId, 'cart.productId': { $ne: productId } },
   {
     $push: { cart: { productId, quantity: 1, addedAt: new Date() } },
-    $set: { updatedAt: new Date() }
+    $set: { updatedAt: new Date() },
   }
 );
 ```
@@ -119,29 +129,36 @@ db.users.updateOne(
 ### Bulk Write
 
 ```javascript
-db.inventory.bulkWrite([
-  { updateOne: {
-      filter: { sku: "ABC123" },
-      update: { $inc: { quantity: -1 } }
-  }},
-  { updateOne: {
-      filter: { sku: "DEF456" },
-      update: { $inc: { quantity: -3 } }
-  }}
-], { ordered: false });
+db.inventory.bulkWrite(
+  [
+    {
+      updateOne: {
+        filter: { sku: 'ABC123' },
+        update: { $inc: { quantity: -1 } },
+      },
+    },
+    {
+      updateOne: {
+        filter: { sku: 'DEF456' },
+        update: { $inc: { quantity: -3 } },
+      },
+    },
+  ],
+  { ordered: false }
+);
 ```
 
 ## Schema Design Guidance
 
 ### Embedding vs Referencing
 
-| Factor | Embed | Reference |
-|--------|-------|-----------|
-| Read pattern | Data always read together | Data read independently |
-| Write pattern | Low update frequency | Frequently updated subdocument |
-| Size | Subdocument is small and bounded | Subdocument can grow unboundedly |
-| Cardinality | One-to-few | One-to-many or many-to-many |
-| Atomicity | Need atomic updates on parent+child | Independent lifecycle |
+| Factor        | Embed                               | Reference                        |
+| ------------- | ----------------------------------- | -------------------------------- |
+| Read pattern  | Data always read together           | Data read independently          |
+| Write pattern | Low update frequency                | Frequently updated subdocument   |
+| Size          | Subdocument is small and bounded    | Subdocument can grow unboundedly |
+| Cardinality   | One-to-few                          | One-to-many or many-to-many      |
+| Atomicity     | Need atomic updates on parent+child | Independent lifecycle            |
 
 ### Common Patterns
 
@@ -156,10 +173,11 @@ db.inventory.bulkWrite([
 ### Explain Plan Analysis
 
 ```javascript
-db.orders.find({ customerId: "abc" }).explain("executionStats");
+db.orders.find({ customerId: 'abc' }).explain('executionStats');
 ```
 
 **Red flags in explain output:**
+
 - `COLLSCAN` -- Full collection scan, missing index
 - `totalDocsExamined` >> `nReturned` -- Index not selective enough
 - `executionTimeMillis` high -- Query needs optimization
@@ -178,14 +196,14 @@ db.orders.find({ customerId: "abc" }).explain("executionStats");
 
 ### Common Bottlenecks and Fixes
 
-| Bottleneck | Symptom | Fix |
-|------------|---------|-----|
-| Missing index | COLLSCAN on filtered field | `createIndex` on query fields |
-| Unbounded arrays | Document exceeds 16MB | Bucket pattern or reference |
-| N+1 lookups | Many `findOne` calls in a loop | Use `$lookup` or batch `$in` |
-| Large pipeline | Slow aggregation | Add `$match` early, use indexes |
-| No projection | Returning full documents when subset needed | Add projection to limit fields |
-| Write amplification | Frequent updates to large embedded arrays | Reference instead of embed |
+| Bottleneck          | Symptom                                     | Fix                             |
+| ------------------- | ------------------------------------------- | ------------------------------- |
+| Missing index       | COLLSCAN on filtered field                  | `createIndex` on query fields   |
+| Unbounded arrays    | Document exceeds 16MB                       | Bucket pattern or reference     |
+| N+1 lookups         | Many `findOne` calls in a loop              | Use `$lookup` or batch `$in`    |
+| Large pipeline      | Slow aggregation                            | Add `$match` early, use indexes |
+| No projection       | Returning full documents when subset needed | Add projection to limit fields  |
+| Write amplification | Frequent updates to large embedded arrays   | Reference instead of embed      |
 
 ## Query Review Checklist
 

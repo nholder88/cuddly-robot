@@ -60,17 +60,17 @@ Adapt examples and patterns to the detected client library.
 
 ## Data Structure Selection
 
-| Use Case | Data Structure | Key Pattern | Commands |
-|----------|---------------|-------------|----------|
-| Simple cache | String | `cache:{entity}:{id}` | `GET`, `SET`, `SETEX` |
-| Object cache | Hash | `user:{id}` | `HGET`, `HSET`, `HGETALL` |
-| Queue / FIFO | List | `queue:{name}` | `LPUSH`, `BRPOP` |
-| Unique collection | Set | `tags:{articleId}` | `SADD`, `SMEMBERS`, `SINTER` |
-| Leaderboard | Sorted Set | `leaderboard:{game}` | `ZADD`, `ZREVRANGE`, `ZRANK` |
-| Event stream | Stream | `events:{topic}` | `XADD`, `XREAD`, `XREADGROUP` |
-| Rate limiter | String + INCR | `ratelimit:{ip}:{window}` | `INCR`, `EXPIRE` |
-| Session | Hash | `session:{token}` | `HSET`, `HGETALL`, `EXPIRE` |
-| Bloom filter | Module | `bloom:{name}` | `BF.ADD`, `BF.EXISTS` |
+| Use Case          | Data Structure | Key Pattern               | Commands                      |
+| ----------------- | -------------- | ------------------------- | ----------------------------- |
+| Simple cache      | String         | `cache:{entity}:{id}`     | `GET`, `SET`, `SETEX`         |
+| Object cache      | Hash           | `user:{id}`               | `HGET`, `HSET`, `HGETALL`     |
+| Queue / FIFO      | List           | `queue:{name}`            | `LPUSH`, `BRPOP`              |
+| Unique collection | Set            | `tags:{articleId}`        | `SADD`, `SMEMBERS`, `SINTER`  |
+| Leaderboard       | Sorted Set     | `leaderboard:{game}`      | `ZADD`, `ZREVRANGE`, `ZRANK`  |
+| Event stream      | Stream         | `events:{topic}`          | `XADD`, `XREAD`, `XREADGROUP` |
+| Rate limiter      | String + INCR  | `ratelimit:{ip}:{window}` | `INCR`, `EXPIRE`              |
+| Session           | Hash           | `session:{token}`         | `HSET`, `HGETALL`, `EXPIRE`   |
+| Bloom filter      | Module         | `bloom:{name}`            | `BF.ADD`, `BF.EXISTS`         |
 
 ## Caching Patterns
 
@@ -114,7 +114,11 @@ async function deleteUser(id: string): Promise<void> {
 ### Rate Limiting (Sliding Window)
 
 ```typescript
-async function isRateLimited(ip: string, limit: number, windowSec: number): Promise<boolean> {
+async function isRateLimited(
+  ip: string,
+  limit: number,
+  windowSec: number
+): Promise<boolean> {
   const key = `ratelimit:${ip}`;
   const now = Date.now();
   const windowStart = now - windowSec * 1000;
@@ -134,10 +138,17 @@ async function isRateLimited(ip: string, limit: number, windowSec: number): Prom
 ### Distributed Lock
 
 ```typescript
-async function acquireLock(resource: string, ttlMs: number): Promise<string | null> {
+async function acquireLock(
+  resource: string,
+  ttlMs: number
+): Promise<string | null> {
   const token = crypto.randomUUID();
   const acquired = await redis.set(
-    `lock:${resource}`, token, "PX", ttlMs, "NX"
+    `lock:${resource}`,
+    token,
+    'PX',
+    ttlMs,
+    'NX'
   );
   return acquired ? token : null;
 }
@@ -159,13 +170,16 @@ async function releaseLock(resource: string, token: string): Promise<boolean> {
 
 ```typescript
 const subscriber = redis.duplicate();
-await subscriber.subscribe("notifications");
-subscriber.on("message", (channel, message) => {
+await subscriber.subscribe('notifications');
+subscriber.on('message', (channel, message) => {
   const payload = JSON.parse(message);
   handleNotification(payload);
 });
 
-await redis.publish("notifications", JSON.stringify({ userId: "123", type: "alert" }));
+await redis.publish(
+  'notifications',
+  JSON.stringify({ userId: '123', type: 'alert' })
+);
 ```
 
 ## Key Naming Conventions
@@ -178,14 +192,14 @@ await redis.publish("notifications", JSON.stringify({ userId: "123", type: "aler
 
 ## TTL Strategy
 
-| Data Type | Suggested TTL | Rationale |
-|-----------|--------------|-----------|
-| Session | 30m - 24h | Security, memory management |
-| API cache | 5m - 1h | Freshness vs load reduction |
-| User profile | 1h - 24h | Infrequently changing data |
-| Rate limit window | Match window size | Auto-cleanup |
-| Temporary lock | 5s - 30s | Prevent deadlocks |
-| Feature flags | 5m - 15m | Quick propagation of changes |
+| Data Type         | Suggested TTL     | Rationale                    |
+| ----------------- | ----------------- | ---------------------------- |
+| Session           | 30m - 24h         | Security, memory management  |
+| API cache         | 5m - 1h           | Freshness vs load reduction  |
+| User profile      | 1h - 24h          | Infrequently changing data   |
+| Rate limit window | Match window size | Auto-cleanup                 |
+| Temporary lock    | 5s - 30s          | Prevent deadlocks            |
+| Feature flags     | 5m - 15m          | Quick propagation of changes |
 
 ## Performance Diagnosis
 
@@ -208,16 +222,16 @@ DEBUG OBJECT key         -- Encoding and size details
 
 ### Common Bottlenecks and Fixes
 
-| Bottleneck | Symptom | Fix |
-|------------|---------|-----|
-| Big keys | Slow `DEL`, high memory | Break into smaller keys, use `UNLINK` for async delete |
-| Hot keys | Single key hammered | Distribute across replicas, use local cache |
-| O(N) commands on large collections | `KEYS *`, `SMEMBERS` on huge sets | Use `SCAN`, paginate with sorted sets |
-| Thundering herd | Cache stampede on expiry | Use lock-based refresh or probabilistic early expiry |
-| Missing TTL | Memory grows unboundedly | Set TTL on all cache keys |
-| Serialization overhead | Slow JSON parse/stringify | Use MessagePack or Protocol Buffers for large payloads |
-| Connection exhaustion | Timeouts, connection refused | Use connection pooling, increase `maxclients` |
-| Lua script blocking | Long-running scripts block server | Keep scripts short, avoid loops over large datasets |
+| Bottleneck                         | Symptom                           | Fix                                                    |
+| ---------------------------------- | --------------------------------- | ------------------------------------------------------ |
+| Big keys                           | Slow `DEL`, high memory           | Break into smaller keys, use `UNLINK` for async delete |
+| Hot keys                           | Single key hammered               | Distribute across replicas, use local cache            |
+| O(N) commands on large collections | `KEYS *`, `SMEMBERS` on huge sets | Use `SCAN`, paginate with sorted sets                  |
+| Thundering herd                    | Cache stampede on expiry          | Use lock-based refresh or probabilistic early expiry   |
+| Missing TTL                        | Memory grows unboundedly          | Set TTL on all cache keys                              |
+| Serialization overhead             | Slow JSON parse/stringify         | Use MessagePack or Protocol Buffers for large payloads |
+| Connection exhaustion              | Timeouts, connection refused      | Use connection pooling, increase `maxclients`          |
+| Lua script blocking                | Long-running scripts block server | Keep scripts short, avoid loops over large datasets    |
 
 ## Review Checklist
 

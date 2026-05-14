@@ -44,6 +44,7 @@ You are a senior Angular engineer who implements and refactors Angular applicati
 ## Scope
 
 This agent covers **Angular frontend only**:
+
 - Components (standalone by default), services, routing
 - Signals, control flow, forms
 - Angular Material components and theming
@@ -199,6 +200,7 @@ Use **web/fetch** to retrieve the latest content from these URLs when resolving 
 ## Quality Checklist
 
 ### Required states (block completion if missing)
+
 - [ ] Loading state on every async data surface
 - [ ] Error state on every async data surface
 - [ ] Empty state on every list, table, or data grid
@@ -206,6 +208,7 @@ Use **web/fetch** to retrieve the latest content from these URLs when resolving 
 - [ ] Success feedback after every mutation
 
 ### Accessibility (block completion if any fail)
+
 - [ ] No `<div (click)>` — semantic HTML used
 - [ ] All interactive elements keyboard accessible
 - [ ] Icon-only controls have `aria-label`
@@ -214,6 +217,7 @@ Use **web/fetch** to retrieve the latest content from these URLs when resolving 
 - [ ] `alt` text on all `<img>` elements
 
 ### Code quality
+
 - [ ] No `any` on public component props or service APIs
 - [ ] Component interfaces defined and exported
 - [ ] No `console.log` left in component code

@@ -66,12 +66,14 @@ Adapt examples and patterns to the detected framework.
 When schema definitions exist, scan and catalog:
 
 **Schema-first (`.graphql` files):**
+
 - Type definitions, input types, enums, interfaces, unions
 - Query, Mutation, Subscription root types
 - Custom directives and scalars
 - Federation entities (`@key`, `@external`, `@requires`)
 
 **Code-first (decorators/classes):**
+
 - `@ObjectType`, `@Field`, `@Resolver`, `@Query`, `@Mutation` (type-graphql / NestJS)
 - `strawberry.type`, `strawberry.field` (Strawberry)
 - Generated schema from `gqlgen.yml` (gqlgen)
@@ -224,16 +226,16 @@ The most common GraphQL performance issue. When resolving a list, each item trig
 ```typescript
 const authorLoader = new DataLoader(async (authorIds: string[]) => {
   const authors = await db.users.findMany({
-    where: { id: { in: authorIds } }
+    where: { id: { in: authorIds } },
   });
-  const authorMap = new Map(authors.map(a => [a.id, a]));
-  return authorIds.map(id => authorMap.get(id));
+  const authorMap = new Map(authors.map((a) => [a.id, a]));
+  return authorIds.map((id) => authorMap.get(id));
 });
 
 const resolvers = {
   Post: {
-    author: (post) => authorLoader.load(post.authorId)
-  }
+    author: (post) => authorLoader.load(post.authorId),
+  },
 };
 ```
 
@@ -243,24 +245,21 @@ Prevent abusive queries that could overwhelm the server:
 
 ```typescript
 const server = new ApolloServer({
-  validationRules: [
-    depthLimit(10),
-    createComplexityLimitRule(1000)
-  ]
+  validationRules: [depthLimit(10), createComplexityLimitRule(1000)],
 });
 ```
 
 ### Common Bottlenecks and Fixes
 
-| Bottleneck | Symptom | Fix |
-|------------|---------|-----|
-| N+1 queries | Slow list resolvers, many DB queries | DataLoader for batching |
-| Over-fetching | Resolver fetches full objects when few fields needed | Field-level resolvers, select only requested fields |
-| No depth limit | Deeply nested queries crash server | Add depth limit validation rule |
-| No complexity limit | Wide queries consume excessive resources | Add complexity scoring |
-| Missing caching | Repeated identical queries | Response caching, CDN, persisted queries |
-| Large payloads | Slow response for paginated lists | Cursor-based pagination, field limiting |
-| Resolver waterfalls | Sequential data fetching | Parallelize independent resolvers |
+| Bottleneck          | Symptom                                              | Fix                                                 |
+| ------------------- | ---------------------------------------------------- | --------------------------------------------------- |
+| N+1 queries         | Slow list resolvers, many DB queries                 | DataLoader for batching                             |
+| Over-fetching       | Resolver fetches full objects when few fields needed | Field-level resolvers, select only requested fields |
+| No depth limit      | Deeply nested queries crash server                   | Add depth limit validation rule                     |
+| No complexity limit | Wide queries consume excessive resources             | Add complexity scoring                              |
+| Missing caching     | Repeated identical queries                           | Response caching, CDN, persisted queries            |
+| Large payloads      | Slow response for paginated lists                    | Cursor-based pagination, field limiting             |
+| Resolver waterfalls | Sequential data fetching                             | Parallelize independent resolvers                   |
 
 ## Federation and Schema Stitching
 
@@ -315,8 +314,8 @@ const resolvers = {
         throw new ForbiddenError('Admin access required');
       }
       return deleteUser(id);
-    }
-  }
+    },
+  },
 };
 ```
 

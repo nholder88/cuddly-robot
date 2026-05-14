@@ -76,13 +76,16 @@ Use the fetched docs to confirm component names, props, layout patterns, and cod
 Use this sequence for new projects or when adding Skeleton to an existing Next.js app:
 
 1. **Create Next.js project** (if greenfield):
+
    ```bash
    npm create next-app@latest <project-name>
    cd <project-name>
    ```
+
    Use TypeScript, ESLint, Tailwind, `app/` router, and src directory if the project prefers it.
 
 2. **Install Skeleton**:
+
    ```bash
    npm i -D @skeletonlabs/skeleton @skeletonlabs/skeleton-react
    ```
@@ -173,25 +176,25 @@ Pairing `text-gray-900 dark:text-gray-100` manually duplicates what Skeleton's a
 
 Use this table for every styling decision. When in doubt, prefer the semantic token over a palette shade.
 
-| Use Case | Class to Use |
-|----------|-------------|
-| Primary button (filled) | `btn preset-filled-primary-500` |
-| Primary button (outlined) | `btn preset-outlined-primary-500` |
-| Primary button (tonal) | `btn preset-tonal-primary-500` |
-| Destructive / error button | `btn preset-filled-error-500` |
-| Surface background (card, panel) | `bg-surface-100-900-token` or `card` |
-| Page / app background | `bg-surface-50-950-token` |
-| Primary text | `text-surface-950-50-token` |
-| Secondary / muted text | `text-surface-700-300-token` |
-| On-primary text | `text-on-primary-token` |
-| Border (default) | `border-surface-300-600-token` |
-| Border (emphasis) | `border-surface-400-500-token` |
-| Error / validation message | `text-error-500` |
-| Success message | `text-success-500` |
-| Warning message | `text-warning-500` |
-| Input background | `input` class from Skeleton |
-| Badge / chip | `chip` with `preset-filled-[color]-[shade]` |
-| Ring / focus | `ring-primary-500` |
+| Use Case                         | Class to Use                                |
+| -------------------------------- | ------------------------------------------- |
+| Primary button (filled)          | `btn preset-filled-primary-500`             |
+| Primary button (outlined)        | `btn preset-outlined-primary-500`           |
+| Primary button (tonal)           | `btn preset-tonal-primary-500`              |
+| Destructive / error button       | `btn preset-filled-error-500`               |
+| Surface background (card, panel) | `bg-surface-100-900-token` or `card`        |
+| Page / app background            | `bg-surface-50-950-token`                   |
+| Primary text                     | `text-surface-950-50-token`                 |
+| Secondary / muted text           | `text-surface-700-300-token`                |
+| On-primary text                  | `text-on-primary-token`                     |
+| Border (default)                 | `border-surface-300-600-token`              |
+| Border (emphasis)                | `border-surface-400-500-token`              |
+| Error / validation message       | `text-error-500`                            |
+| Success message                  | `text-success-500`                          |
+| Warning message                  | `text-warning-500`                          |
+| Input background                 | `input` class from Skeleton                 |
+| Badge / chip                     | `chip` with `preset-filled-[color]-[shade]` |
+| Ring / focus                     | `ring-primary-500`                          |
 
 ### Spacing Rules
 
@@ -221,12 +224,14 @@ Place new Skeleton-backed components in `components/`. Keep layout structure (se
 ## Quality Checklist
 
 ### Code Quality
+
 - [ ] TypeScript strict mode; no unnecessary `any`.
 - [ ] Server Components by default; Client Components only where needed (`"use client"`).
 - [ ] Build passes (`npm run build`); dev server runs without errors.
 - [ ] No conflicting UI libraries (Flowbite, DaisyUI) in the stack.
 
 ### Theme Compliance (all must be true before handing off)
+
 - [ ] Zero hardcoded Tailwind palette colors (`text-blue-500`, `bg-gray-900`, etc.) — use Skeleton tokens
 - [ ] Zero hardcoded hex, rgb, or hsl values in `className` or `style`
 - [ ] Zero manual `dark:` color variants — use adaptive tokens instead
@@ -234,6 +239,7 @@ Place new Skeleton-backed components in `components/`. Keep layout structure (se
 - [ ] Spacing uses Tailwind scale only — no arbitrary `p-[Xpx]` or `mt-[Xpx]` values
 
 ### UX Principles (all must be true before handing off)
+
 - [ ] **Visual hierarchy** — Clear H1/H2 structure, primary action is visually dominant
 - [ ] **Loading states** — Every async operation has a spinner, skeleton, or progress indicator
 - [ ] **Empty states** — Every list or data surface has an empty state component

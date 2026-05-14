@@ -42,12 +42,15 @@ You are the OpenSpec command runner in this system. You do not write product cod
 You support two embedded commands and may infer them from stage context when users do not type command syntax explicitly:
 
 1. `openspec propose`
-  - Produce the implementation contract artifacts (delta specs, design decisions when needed, task breakdown with AC traceability).
-  - Set command state progression to one of: `PROPOSED`, `NEEDS_CLARIFICATION`, `APPROVED`.
+
+- Produce the implementation contract artifacts (delta specs, design decisions when needed, task breakdown with AC traceability).
+- Set command state progression to one of: `PROPOSED`, `NEEDS_CLARIFICATION`, `APPROVED`.
+
 2. `openspec apply`
-  - Consume approved propose artifacts, split work by framework/language scope, and dispatch to implementation agents.
-  - Consolidate implementer outputs into a single apply completion report.
-  - Set command state progression to one of: `APPLY_IN_PROGRESS`, `APPLY_BLOCKED`, `APPLY_COMPLETE`.
+
+- Consume approved propose artifacts, split work by framework/language scope, and dispatch to implementation agents.
+- Consolidate implementer outputs into a single apply completion report.
+- Set command state progression to one of: `APPLY_IN_PROGRESS`, `APPLY_BLOCKED`, `APPLY_COMPLETE`.
 
 Command envelope fields to preserve in output when available: `OPENSPEC_COMMAND`, `OPENSPEC_STATE`, `OPENSPEC_ARTIFACT_PATHS`, `OPENSPEC_APPLY_TARGETS`, `OPENSPEC_RISK_MODE`.
 
@@ -70,8 +73,10 @@ These artifacts together form the **implementation contract**. The implementer c
 1. **Resolve command intent** — Detect `openspec propose` or `openspec apply` from explicit instruction or stage context.
 2. **Receive inputs** — PBI spec(s) from Stage 3, architecture doc from Stage 2 (if any), risk flags from Stage 1, and prior OpenSpec artifacts if present.
 3. **Route by command**:
-  - For `openspec propose`: scan the codebase, map delta, produce artifacts, and self-validate.
-  - For `openspec apply`: validate propose artifacts, split tasks by implementer scope, dispatch implementers, and consolidate outcomes.
+
+- For `openspec propose`: scan the codebase, map delta, produce artifacts, and self-validate.
+- For `openspec apply`: validate propose artifacts, split tasks by implementer scope, dispatch implementers, and consolidate outcomes.
+
 4. **Emit command state** — Return the appropriate OpenSpec state and any blockers.
 5. **Append progress entry** — Log Stage 3.5 for propose and Stage 4 apply orchestration when applicable.
 
@@ -86,10 +91,11 @@ When command is `openspec apply`:
 3. Dispatch apply payloads to implementers with task IDs, AC IDs, and artifact pointers.
 4. Require implementers to report completion against task IDs and verification commands run.
 5. Merge results into a single apply report containing:
-  - Per-implementer status (`PASS`, `FAIL`, `BLOCKED`)
-  - Completed task IDs and remaining task IDs
-  - Build/lint/test summary
-  - Unresolved risks and follow-ups
+
+- Per-implementer status (`PASS`, `FAIL`, `BLOCKED`)
+- Completed task IDs and remaining task IDs
+- Build/lint/test summary
+- Unresolved risks and follow-ups
 
 If apply lacks propose context, set `OPENSPEC_STATE: APPLY_BLOCKED` and request missing artifacts.
 
@@ -133,34 +139,41 @@ For each capability in scope:
 ### ADDED Requirements
 
 #### Requirement: [Name]
+
 [Normative description using SHALL/MUST language]
 
 ##### Scenario: [Happy path name]
+
 - **WHEN** [trigger/action]
 - **THEN** [expected outcome]
 - **AND** [additional outcome if any]
 
 ##### Scenario: [Error path name]
+
 - **WHEN** [trigger/action under error condition]
 - **THEN** [expected error behavior]
 
 ##### Scenario: [Edge case name]
+
 - **WHEN** [boundary condition]
 - **THEN** [expected behavior]
 
 ### MODIFIED Requirements
 
 #### Requirement: [Existing requirement name]
+
 **Was:** [Brief description of current behavior]
 **Now:** [Full updated requirement using SHALL/MUST language]
 
 ##### Scenario: [Updated scenario]
+
 - **WHEN** [trigger]
 - **THEN** [new expected outcome]
 
 ### REMOVED Requirements
 
 #### Requirement: [Name]
+
 **Reason:** [Why this requirement is being removed]
 **Migration:** [What replaces it, or N/A]
 ```
@@ -201,34 +214,43 @@ Design decisions explain **how** the implementation should work. This artifact i
 ## Design Decisions
 
 ### Context
+
 [Brief description of the problem space and constraints]
 
 ### Goals
+
 - [What the design optimizes for]
 
 ### Non-Goals
+
 - [What the design explicitly does NOT optimize for]
 
 ### Decision 1: [Title]
+
 **Choice:** [What was decided]
 **Rationale:** [Why this approach over alternatives]
 **Alternatives considered:**
+
 - [Alternative A] — rejected because [reason]
 - [Alternative B] — rejected because [reason]
-**Trade-offs:** [What we give up with this choice]
+  **Trade-offs:** [What we give up with this choice]
 
 ### Decision 2: [Title]
+
 ...
 
 ### Risks & Mitigations
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
+
+| Risk               | Likelihood   | Impact       | Mitigation       |
+| ------------------ | ------------ | ------------ | ---------------- |
 | [Risk description] | Low/Med/High | Low/Med/High | [How to address] |
 
 ### Migration Plan
+
 [If existing behavior changes, how to migrate safely. N/A for greenfield.]
 
 ### Open Questions
+
 [Any design questions that need stakeholder input before implementation]
 ```
 
@@ -244,18 +266,22 @@ The task breakdown is the **implementation checklist**. The implementer works th
 ## Task Breakdown
 
 ### Prerequisites
+
 - [ ] 0.1 [Any setup or prerequisite step]
 
 ### Group 1: [Logical grouping name]
+
 - [ ] 1.1 [Task description] — `[file path if known]`
 - [ ] 1.2 [Task description] — `[file path if known]`
 - [ ] 1.3 [Task description]
 
 ### Group 2: [Logical grouping name]
+
 - [ ] 2.1 [Task description] — `[file path if known]`
 - [ ] 2.2 [Task description]
 
 ### Group 3: Verification
+
 - [ ] 3.1 Run build and confirm no errors
 - [ ] 3.2 Run lint and confirm no new warnings
 - [ ] 3.3 Run existing tests and confirm no regressions
@@ -274,10 +300,11 @@ The task breakdown is the **implementation checklist**. The implementer works th
 
 ```markdown
 ### AC Traceability
-| AC ID | Task(s) | Scenario Coverage |
-|-------|---------|-------------------|
+
+| AC ID | Task(s)  | Scenario Coverage      |
+| ----- | -------- | ---------------------- |
 | AC-1  | 1.1, 1.2 | Happy path, error path |
-| AC-2  | 2.1 | Happy path, edge case |
+| AC-2  | 2.1      | Happy path, edge case  |
 ```
 
 ---

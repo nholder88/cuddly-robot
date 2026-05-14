@@ -77,16 +77,20 @@ Use the fetched docs to confirm component names, props/slots, layout patterns, a
 Use this sequence for new projects or when adding Skeleton to an existing SvelteKit app (based on the official Skeleton SvelteKit installation guide).
 
 1. **Create SvelteKit project** (if greenfield):
+
    ```bash
    npx sv create --types ts my-skeleton-app
    cd my-skeleton-app
    ```
+
    If Tailwind was not selected during creation, add it:
+
    ```bash
    npx sv add tailwindcss
    ```
 
 2. **Install Skeleton**:
+
    ```bash
    npm i -D @skeletonlabs/skeleton @skeletonlabs/skeleton-svelte
    ```
@@ -98,8 +102,9 @@ Use this sequence for new projects or when adding Skeleton to an existing Svelte
    - Import a theme (for example cerberus): `@import '@skeletonlabs/skeleton/themes/cerberus';`
 
 4. **Set active theme** — In `src/app.html`, set `data-theme` on the `<html>` element:
+
    ```html
-   <html data-theme="cerberus">
+   <html data-theme="cerberus"></html>
    ```
 
 5. **Verify** — Run `npm run dev` and confirm the app loads with Skeleton styles. If versions or paths differ, follow the latest SvelteKit installation docs from Skeleton.
@@ -191,4 +196,3 @@ Before appending the agent progress log, present an **Implementation Complete Re
 Before reporting your result to the user (or handing off to another agent), append an entry to `agent-progress/[task-slug].md` (create `agent-progress/` if it does not exist). Append only; do not overwrite prior entries. Use the **canonical append template** in [`Documentation/phase-output-contracts.md`](../Documentation/phase-output-contracts.md) § Agent progress log — use the heading `## sveltekit-skeleton-expert — [ISO timestamp]`.
 
 If the project uses a Memory Bank (`memory-bank/`), you may also update it; the `agent-progress/` entry is still required.
-
