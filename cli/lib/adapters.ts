@@ -16,6 +16,8 @@ export interface AdapterContext {
 
 export interface SkillsAdapterContext extends AdapterContext {
   workspaceRoot: string;
+  /** When set, only these skill family dirnames are installed. */
+  selectedSkillFamilies?: string[];
 }
 
 export interface PackAdapter {
@@ -75,16 +77,38 @@ export function createPassthroughAdapter(id: string): PackAdapter {
       if (!fs.existsSync(ctx.skillsSourceDir)) {
         return [];
       }
-      const files = listFilesRecursive(ctx.skillsSourceDir);
       const base = path.resolve(ctx.skillsSourceDir);
-      return files.map((abs) => {
-        const rel = path.relative(base, abs);
-        return {
-          kind: 'copy' as const,
-          targetSubpath: path.join('.github', 'skills', rel),
-          sourceAbsolute: abs,
-        };
-      });
+      const entries = fs.readdirSync(ctx.skillsSourceDir, { withFileTypes: true });
+      const dirs = entries
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name)
+        .filter((name) =>
+          ctx.selectedSkillFamilies ? ctx.selectedSkillFamilies.includes(name) : true,
+        );
+
+      const artifacts: InstallArtifact[] = [];
+      for (const dir of dirs) {
+        const files = listFilesRecursive(path.join(base, dir));
+        for (const abs of files) {
+          const rel = path.relative(base, abs);
+          artifacts.push({
+            kind: 'copy' as const,
+            targetSubpath: path.join('.github', 'skills', rel),
+            sourceAbsolute: abs,
+          });
+        }
+      }
+      // Also copy top-level files (README.md, agent-to-skill-map.md, etc.)
+      for (const e of entries) {
+        if (e.isFile()) {
+          artifacts.push({
+            kind: 'copy' as const,
+            targetSubpath: path.join('.github', 'skills', e.name),
+            sourceAbsolute: path.join(base, e.name),
+          });
+        }
+      }
+      return artifacts;
     },
   };
 }

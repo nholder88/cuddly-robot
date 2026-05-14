@@ -21,6 +21,8 @@ export interface RunInstallOptions {
   scope?: 'global' | 'local';
   /** Project root for local-scope installs (defaults to process.cwd()). */
   localInstallRoot?: string;
+  /** Subset of skill family dirnames to copy into workspace. Undefined copies all families. */
+  selectedSkillFamilies?: string[];
 }
 
 export interface ManifestTarget {
@@ -126,7 +128,13 @@ async function emitForTool(
 
 async function emitWorkspaceSkills(
   workspaceRoot: string,
-  ctx: { agentsSourceDir: string; templatesSourceDir: string; skillsSourceDir: string; repoRoot: string },
+  ctx: {
+    agentsSourceDir: string;
+    templatesSourceDir: string;
+    skillsSourceDir: string;
+    repoRoot: string;
+    selectedSkillFamilies?: string[];
+  },
   adapterId: string,
   dryRun: boolean,
 ): Promise<{ paths: string[]; skillsPath: string; count: number }> {
@@ -229,7 +237,8 @@ export async function runInstall(opts: RunInstallOptions): Promise<{ manifest: I
 
     if (opts.workspaceSkills && fsSync.existsSync(skillsSourceDir)) {
       const firstTool = getToolById(opts.registry, opts.toolIds[0]!);
-      const skillsResult = await emitWorkspaceSkills(workspaceRoot, ctx, firstTool.adapterId, opts.dryRun);
+      const skillsCtx = { ...ctx, selectedSkillFamilies: opts.selectedSkillFamilies };
+      const skillsResult = await emitWorkspaceSkills(workspaceRoot, skillsCtx, firstTool.adapterId, opts.dryRun);
       workspaceInstalled.push(...skillsResult.paths);
       if (skillsResult.count > 0) {
         skillsPath = skillsResult.skillsPath;

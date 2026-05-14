@@ -9,6 +9,7 @@ import { defaultInstallRoot, getNodePlatform } from './lib/paths.js';
 import { loadToolsRegistry, listToolIds } from './lib/registry.js';
 import { runInstall, type InstallManifestV3 } from './lib/pipeline.js';
 import { listAgents } from './lib/agents.js';
+import { listSkillFamilies, loadAgentSkillMap, getRequiredSkills } from './lib/skills.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -31,6 +32,8 @@ interface ParsedArgs {
   agents: string[] | null;
   allAgents: boolean;
   localRoot: string | null;
+  skillFamilies: string[] | null;
+  allSkills: boolean;
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
@@ -49,6 +52,8 @@ function parseArgs(argv: string[]): ParsedArgs {
     agents: null,
     allAgents: false,
     localRoot: null,
+    skillFamilies: null,
+    allSkills: false,
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -90,6 +95,10 @@ function parseArgs(argv: string[]): ParsedArgs {
       out.allAgents = true;
     } else if (a === '--local-root' && argv[i + 1]) {
       out.localRoot = path.resolve(argv[++i]!);
+    } else if (a === '--skill-families' && argv[i + 1]) {
+      out.skillFamilies = argv[++i]!.split(',').map((s) => s.trim()).filter(Boolean);
+    } else if (a === '--all-skills') {
+      out.allSkills = true;
     } else if (!a.startsWith('-')) {
       continue;
     } else {
@@ -118,6 +127,8 @@ Options:
   --agents <name,name>  Agent names to install (e.g. orchestrator,architect-planner)
   --all-agents          Install all agents without prompting (non-interactive shortcut)
   --local-root <path>   Project root for local scope installs (default: cwd)
+  --skill-families <f>  Comma-separated skill family dirnames to install with workspace skills
+  --all-skills          Install all skill families without prompting
   --workspace <path>    Project root for optional workspace copies
   --workspace-templates Copy templates/ into <workspace>/templates/
   --no-workspace-skills Skip copying .github/skills when using --workspace
@@ -278,6 +289,10 @@ async function main(): Promise<void> {
   let workspaceRoot: string | null = args.workspace != null ? path.resolve(args.workspace) : null;
   let workspaceTemplates = args.workspaceTemplates;
   let workspaceSkills = true;
+  let selectedSkillFamilies: string[] | undefined;
+
+  const skillsSourceDir = path.join(repoRoot, 'skills');
+  const allSkillFamilies = await listSkillFamilies(skillsSourceDir);
 
   if (interactive) {
     const defaultSkills = args.workspace !== undefined ? !args.noWorkspaceSkills : false;
@@ -316,6 +331,43 @@ async function main(): Promise<void> {
       workspaceRoot = null;
     }
 
+    // ── Skill family selection (only if installing skills to workspace) ───────
+    if (workspaceSkills && allSkillFamilies.length > 0) {
+      const pickedFamilies = await checkbox({
+        message: 'Which skill families to install into workspace?',
+        choices: allSkillFamilies.map((f) => ({ name: f.label, value: f.dirname, checked: true })),
+      });
+
+      if (pickedFamilies.length < allSkillFamilies.length) {
+        selectedSkillFamilies = pickedFamilies;
+
+        // Warn about missing skills needed by selected agents
+        if (selectedAgentFiles !== undefined || true) {
+          const agentSkillMap = await loadAgentSkillMap(skillsSourceDir);
+          const agentFileList = selectedAgentFiles ?? allSkillFamilies.map((f) => f.dirname);
+          // Use all agent files when no agent filter was set
+          const allAgentFilenames = (await listAgents(path.join(repoRoot, 'agents'))).map(
+            (a) => a.filename,
+          );
+          const effectiveAgents = selectedAgentFiles ?? allAgentFilenames;
+          const required = getRequiredSkills(effectiveAgents, agentSkillMap);
+          const missing = [...required].filter((s) => !pickedFamilies.includes(s));
+          if (missing.length > 0) {
+            console.log('');
+            console.log(
+              `  Warning: the following skill families are used by your selected agents but were not selected:`,
+            );
+            for (const m of missing) {
+              console.log(`    • ${m}`);
+            }
+            console.log('  Agents may reference skills that are not installed. This is non-blocking.');
+            console.log('');
+          }
+        }
+      }
+      // pickedFamilies.length === allSkillFamilies.length → undefined (install all)
+    }
+
     const dryRunInteractive = await confirm({
       message: 'Preview only (dry-run, no files written)?',
       default: args.dryRun,
@@ -342,17 +394,32 @@ async function main(): Promise<void> {
       selectedAgentFiles,
       scope,
       localInstallRoot: localInstallRoot ?? undefined,
+      selectedSkillFamilies,
     });
 
     printSummary(manifestPath, manifest, dryRunInteractive);
     return;
   }
 
+  // ── Non-interactive skill family resolution ───────────────────────────────
   workspaceSkills = !args.noWorkspaceSkills && args.workspace !== undefined;
   if (args.workspaceTemplates && workspaceRoot === null) {
     console.error('--workspace-templates requires --workspace');
     process.exit(1);
   }
+
+  if (workspaceSkills && args.skillFamilies) {
+    selectedSkillFamilies = args.skillFamilies;
+    // Validate names
+    const validFamilies = new Set(allSkillFamilies.map((f) => f.dirname));
+    const invalid = selectedSkillFamilies.filter((f) => !validFamilies.has(f));
+    if (invalid.length > 0) {
+      console.error(`Unknown skill families: ${invalid.join(', ')}`);
+      console.error(`Valid: ${[...validFamilies].join(', ')}`);
+      process.exit(1);
+    }
+  }
+  // --all-skills or no --skill-families → selectedSkillFamilies stays undefined (install all)
 
   const { manifest, manifestPath } = await runInstall({
     repoRoot: args.source,
@@ -366,6 +433,7 @@ async function main(): Promise<void> {
     selectedAgentFiles,
     scope,
     localInstallRoot: localInstallRoot ?? undefined,
+    selectedSkillFamilies,
   });
 
   printSummary(manifestPath, manifest, args.dryRun);
