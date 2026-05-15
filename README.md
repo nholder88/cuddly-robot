@@ -17,6 +17,7 @@ Node 20 + TypeScript CLI built on `@inquirer/prompts` and `ajv`. Agents are plai
 ## Implemented features
 
 - 32 `*.agent.md` agent definitions covering orchestrator, implementers, reviewers, and specialists
+- Embedded OpenSpec command workflow in the agent pipeline (`openspec propose` then `openspec apply`)
 - 10 stack templates (frontend + backend variants) with shared contracts and CI workflow templates
 - Deduplicated skills library organized by category
 - `ai-agent-pack-install` CLI with an interactive wizard and non-interactive `--yes` mode
@@ -56,7 +57,6 @@ Platform-specific one-shots are also available: `installer/Setup.ps1` (Windows) 
 
 Most mature repo in this cleanup batch. Last commit April 2026, 44 commits in the last year. Well-structured, tests present, real personal IP worth keeping. Main gap is npm publication; the code itself is usable today from a local clone.
 
-# Update from latest repo
-powershell -ExecutionPolicy Bypass -File .\installer\Update.ps1
+---
 
 *Part of Nigel's personal project cleanup (April 2026). See problem statement above for what this is supposed to solve.*

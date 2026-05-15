@@ -1,0 +1,10 @@
+{
+  "name": "repo-audit",
+  "version": "0.1.0",
+  "description": "Audit, deduplicate, and document a personal GitHub repo collection. Inventories every repo, deep-analyzes each, clusters duplicates, drafts new READMEs, and emits PowerShell scripts that stage draft PRs and archives — all from inside Cowork.",
+  "author": {
+    "name": "Nigel Holder",
+    "url": "https://github.com/nholder88"
+  },
+  "keywords": ["github", "audit", "consolidation", "readme", "gh-cli", "cleanup"]
+}
