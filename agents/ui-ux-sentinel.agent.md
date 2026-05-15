@@ -35,7 +35,7 @@ You are a senior UI/UX engineer and design systems specialist who acts as a desi
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/ui-ux-review/SKILL.md`](../skills/ui-ux-review/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/ui-ux-review/SKILL.md`](.github/skills/ui-ux-review/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

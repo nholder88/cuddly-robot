@@ -141,6 +141,28 @@ Options:
 `);
 }
 
+async function warnSkillsNotInstalled(
+  skillsSourceDir: string,
+  agentsDir: string,
+  selectedAgentFiles: string[] | undefined,
+): Promise<void> {
+  const agentSkillMap = await loadAgentSkillMap(skillsSourceDir);
+  if (agentSkillMap.size === 0) return;
+  const allAgentFilenames = (await listAgents(agentsDir)).map((a) => a.filename);
+  const effectiveAgents = selectedAgentFiles ?? allAgentFilenames;
+  const required = getRequiredSkills(effectiveAgents, agentSkillMap);
+  if (required.size === 0) return;
+  console.log('');
+  console.log('  Warning: workspace skills are not being installed.');
+  console.log('  The following skill families are referenced by your selected agents:');
+  for (const s of [...required].sort()) {
+    console.log(`    • ${s}`);
+  }
+  console.log('  Agents reference .github/skills/<family>/SKILL.md — those files will not exist.');
+  console.log('  Re-run with --workspace <path> to install skills alongside agents.');
+  console.log('');
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
@@ -368,6 +390,10 @@ async function main(): Promise<void> {
       // pickedFamilies.length === allSkillFamilies.length → undefined (install all)
     }
 
+    if (!workspaceSkills) {
+      await warnSkillsNotInstalled(skillsSourceDir, path.join(repoRoot, 'agents'), selectedAgentFiles);
+    }
+
     const dryRunInteractive = await confirm({
       message: 'Preview only (dry-run, no files written)?',
       default: args.dryRun,
@@ -420,6 +446,10 @@ async function main(): Promise<void> {
     }
   }
   // --all-skills or no --skill-families → selectedSkillFamilies stays undefined (install all)
+
+  if (!workspaceSkills) {
+    await warnSkillsNotInstalled(skillsSourceDir, path.join(repoRoot, 'agents'), selectedAgentFiles);
+  }
 
   const { manifest, manifestPath } = await runInstall({
     repoRoot: args.source,

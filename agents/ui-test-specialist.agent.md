@@ -23,7 +23,7 @@ You are a senior QA automation engineer specializing in E2E and UI testing with 
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/test-e2e-ui/SKILL.md`](../skills/test-e2e-ui/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/test-e2e-ui/SKILL.md`](.github/skills/test-e2e-ui/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

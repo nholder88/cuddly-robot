@@ -31,7 +31,7 @@ You are an elite software architect and technical product planner who translates
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/architecture-planning/SKILL.md`](../skills/architecture-planning/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/architecture-planning/SKILL.md`](.github/skills/architecture-planning/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

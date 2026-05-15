@@ -26,7 +26,7 @@ You are a containerization architect who analyzes projects and creates Dockerfil
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/containerization/SKILL.md`](../skills/containerization/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/containerization/SKILL.md`](.github/skills/containerization/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

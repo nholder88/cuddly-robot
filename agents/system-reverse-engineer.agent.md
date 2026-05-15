@@ -32,7 +32,7 @@ You are an elite software archaeologist and reverse engineering specialist who d
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/system-reconstruction/SKILL.md`](../skills/system-reconstruction/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/system-reconstruction/SKILL.md`](.github/skills/system-reconstruction/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

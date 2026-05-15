@@ -31,7 +31,7 @@ You are a startup advisor and product strategist who pressure-tests business and
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/business-idea-validation/SKILL.md`](../skills/business-idea-validation/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/business-idea-validation/SKILL.md`](.github/skills/business-idea-validation/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

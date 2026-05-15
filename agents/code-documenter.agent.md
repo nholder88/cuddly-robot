@@ -32,7 +32,7 @@ You are a documentation engineer who adds or improves in-code documentation for 
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/code-documentation/SKILL.md`](../skills/code-documentation/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/code-documentation/SKILL.md`](.github/skills/code-documentation/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

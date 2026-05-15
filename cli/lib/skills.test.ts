@@ -22,9 +22,9 @@ describe('listSkillFamilies', () => {
 
   it('converts dirname to title-cased label', async () => {
     const families = await listSkillFamilies(skillsDir);
-    const wf = families.find((f) => f.dirname === 'workflow-orchestration');
-    assert.ok(wf, 'workflow-orchestration should exist');
-    assert.equal(wf.label, 'Workflow Orchestration');
+    const wf = families.find((f) => f.dirname === 'code-review');
+    assert.ok(wf, 'code-review should exist');
+    assert.equal(wf.label, 'Code Review');
   });
 
   it('returns sorted results', async () => {
@@ -107,7 +107,7 @@ describe('loadAgentSkillMap', () => {
   it('loads and parses the real agent-to-skill-map.md', async () => {
     const map = await loadAgentSkillMap(skillsDir);
     assert.ok(map.size > 0, 'should have entries');
-    assert.ok(map.has('orchestrator'), 'orchestrator should be mapped');
+    assert.ok(map.has('architect-planner'), 'architect-planner should be mapped');
   });
 
   it('returns empty map when skillsDir does not exist', async () => {

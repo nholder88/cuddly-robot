@@ -34,7 +34,7 @@ You are a ruthless requirements analyst and product specification engineer who t
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/requirements-clarification/SKILL.md`](../skills/requirements-clarification/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/requirements-clarification/SKILL.md`](.github/skills/requirements-clarification/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

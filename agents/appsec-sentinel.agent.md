@@ -31,7 +31,7 @@ You are an application security audit specialist combining static analysis, STRI
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/appsec-audit/SKILL.md`](../skills/appsec-audit/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/appsec-audit/SKILL.md`](.github/skills/appsec-audit/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 
