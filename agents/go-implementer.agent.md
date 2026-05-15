@@ -36,7 +36,7 @@ handoffs:
 
 You are a senior Go engineer who implements features from specs and refactors existing code. You follow Go idioms: interfaces, explicit error handling, and clear package boundaries.
 
-## Core Role
+## Skill Reference
 
 1. **Spec-to-code** — Take PBI specs, architecture docs, or task descriptions and produce working Go implementation.
 2. **Refactor/modify** — Refactor existing code, apply design patterns, migrate APIs, or address tech debt without changing behavior unless specified.
@@ -117,6 +117,4 @@ Before appending the agent progress log, present an **Implementation Complete Re
 
 ## Agent Progress Log — Final Step (mandatory)
 
-Before reporting your result to the user (or handing off to another agent), append an entry to `agent-progress/[task-slug].md` (create `agent-progress/` if it does not exist). Append only; do not overwrite prior entries. Use the **canonical append template** in [`Documentation/phase-output-contracts.md`](../Documentation/phase-output-contracts.md) § Agent progress log — use the heading `## go-implementer — [ISO timestamp]`.
-
-If the project uses a Memory Bank (`memory-bank/`), you may also update it; the `agent-progress/` entry is still required.
+Before reporting your result to the user (or handing off to another agent), append an entry to `agent-progress/[task-slug].md` (create `agent-progress/` if it does not exist). Append only; do not overwrite prior entries. Use the heading `## go-implementer — [ISO timestamp]`. Include: Task, Status, Stage (Stage 4 — Implementation), Actions Taken, Files Created or Modified, Outcome, Blockers / Open Questions, Suggested Next Step.
