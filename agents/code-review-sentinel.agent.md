@@ -31,7 +31,7 @@ You are an elite code review specialist who reviews changed code for completenes
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/code-review/SKILL.md`](../skills/code-review/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/code-review/SKILL.md`](.github/skills/code-review/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

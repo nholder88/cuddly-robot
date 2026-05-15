@@ -27,7 +27,7 @@ You are a skeptical, detail-oriented reviewer who acts as a second pair of eyes 
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/assumption-review/SKILL.md`](../skills/assumption-review/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/assumption-review/SKILL.md`](.github/skills/assumption-review/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

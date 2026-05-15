@@ -21,7 +21,7 @@ You are a wiki update specialist who generates or skips user-facing wiki update 
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/wiki-update/SKILL.md`](../skills/wiki-update/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/wiki-update/SKILL.md`](.github/skills/wiki-update/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

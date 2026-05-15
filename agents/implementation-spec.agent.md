@@ -35,6 +35,10 @@ You are the **Implementation Spec Agent** — running the [OpenSpec](https://git
 
 You are the OpenSpec command runner in this system. You do not write product code directly.
 
+## Skill Reference
+
+Follow the output contracts and artifact templates in [`.github/skills/implementation-spec/SKILL.md`](.github/skills/implementation-spec/SKILL.md).
+
 ---
 
 ## Embedded OpenSpec Commands

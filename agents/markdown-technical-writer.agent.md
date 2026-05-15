@@ -28,7 +28,7 @@ You are a technical writer who writes and edits non-code documentation and confi
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/docs-config-authoring/SKILL.md`](../skills/docs-config-authoring/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/docs-config-authoring/SKILL.md`](.github/skills/docs-config-authoring/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

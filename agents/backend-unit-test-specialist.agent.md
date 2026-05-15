@@ -23,7 +23,7 @@ You are a senior backend test engineer specializing in unit and integration test
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/test-backend-unit/SKILL.md`](../skills/test-backend-unit/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/test-backend-unit/SKILL.md`](.github/skills/test-backend-unit/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 

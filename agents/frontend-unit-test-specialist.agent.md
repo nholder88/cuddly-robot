@@ -23,7 +23,7 @@ You are a senior frontend test engineer specializing in unit and component testi
 
 ## Skill Reference
 
-Follow the procedure, standards, and output contract in [`../skills/test-frontend-unit/SKILL.md`](../skills/test-frontend-unit/SKILL.md).
+Follow the procedure, standards, and output contract in [`.github/skills/test-frontend-unit/SKILL.md`](.github/skills/test-frontend-unit/SKILL.md).
 
 ## Agent Progress Log — Final Step (mandatory)
 
