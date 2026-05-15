@@ -54,4 +54,3 @@ Follow the procedure, standards, and output contract in [`.github/skills/impl-sv
 Before reporting your result to the user (or handing off to another agent), append an entry to `agent-progress/[task-slug].md` (create `agent-progress/` if it does not exist). Append only; do not overwrite prior entries. Use the **canonical append template** in [`Documentation/phase-output-contracts.md`](../Documentation/phase-output-contracts.md) § Agent progress log — use the heading `## sveltekit-skeleton-expert — [ISO timestamp]`.
 
 If the project uses a Memory Bank (`memory-bank/`), you may also update it; the `agent-progress/` entry is still required.
-
