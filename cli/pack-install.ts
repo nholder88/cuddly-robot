@@ -112,10 +112,14 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function printHelp(): void {
-  console.log(`Usage: node --import tsx cli/pack-install.ts [options]
+  console.log(`Usage: ai-agent-pack-install [options]
+       npm run pack:install -- [options]   (from a clone of this repo)
 
 Install agents + templates into selected IDE prompt folders; optionally copy
 skills and templates into a project workspace.
+
+After \`npm install -g @nholder88/ai-agent-workflows-tools\`, run \`ai-agent-pack-install\`.
+With npx: \`npx @nholder88/ai-agent-workflows-tools\` (same command; package is private on npm).
 
 Run without --yes for an interactive wizard (select editors, scope, agents,
 workspace options, dry-run, confirm).

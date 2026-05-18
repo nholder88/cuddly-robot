@@ -4,7 +4,7 @@
 
 ## Problem
 
-Using AI coding assistants across many projects means redefining the same agents (orchestrator, implementer, reviewer, tester) and the same stack templates every time. That's repetitive, drifts between projects, and makes it hard to keep a consistent quality bar. Nigel wanted a single reusable pack he could drop into any project with one command.
+Using AI coding assistants across many projects means redefining the same agents (orchestrator, implementer, reviewer, tester) and the same stack templates every time. That is repetitive, drifts between projects, and makes it hard to keep a consistent quality bar. This pack installs a curated, versioned set into any project with one command.
 
 ## Goal
 
@@ -34,11 +34,31 @@ Node 20 + TypeScript CLI built on `@inquirer/prompts` and `ajv`. Agents are plai
 
 ## Getting started
 
+### From npm (recommended)
+
+The package is published as a **private** scoped module (`@nholder88/ai-agent-workflows-tools`). Installers need npm login and access to that scope (or a token with read access).
+
 ```bash
-# Install deps
+# Interactive install into VS Code / Cursor / Claude Code user paths
+npx @nholder88/ai-agent-workflows-tools
+
+# Or install globally
+npm install -g @nholder88/ai-agent-workflows-tools
+ai-agent-pack-install
+
+# Non-interactive
+npx @nholder88/ai-agent-workflows-tools --yes --targets vscode,cursor
+
+# Help
+ai-agent-pack-install --help
+```
+
+### From a clone (development)
+
+```bash
 npm install
 
-# Interactive install into VS Code / Cursor user paths
+# Interactive (same CLI as above)
 npm run pack:install
 
 # Non-interactive
@@ -49,14 +69,8 @@ npm run templates:test-parity
 npm run templates:validate-parity
 ```
 
-Platform-specific one-shots are also available: `installer/Setup.ps1` (Windows) and `installer/mac/setup.sh` (macOS).
-
 ## Status
 
 **Current:** working - 75% complete
 
-Most mature repo in this cleanup batch. Last commit April 2026, 44 commits in the last year. Well-structured, tests present, real personal IP worth keeping. Main gap is npm publication; the code itself is usable today from a local clone.
-
----
-
-*Part of Nigel's personal project cleanup (April 2026). See problem statement above for what this is supposed to solve.*
+Core installer, agents, templates, and tests are in place. Primary remaining work is first npm release and optional platform installers.
